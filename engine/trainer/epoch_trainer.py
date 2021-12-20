@@ -11,11 +11,25 @@ from .base_trainer import TRAINERS, BaseTrainer
 
 @TRAINERS.register()
 class EpochTrainer(BaseTrainer):
-
+    
     def __init__(self, model, optimizer=None, logger=None, train_params: Dict = {}) -> None:
+        """Trainer in epoch fashion.
+
+        Args:
+            model (callable[MODELS]): the model to train
+            optimizer (callable[OPTIMIZER]): the optimizero used to train. Defaults to None.
+            logger (callable[LOGGER]): the logger to log the info during train. Defaults to None.
+            train_params (Dict): with some indicated keys. Defaults to {}.
+        """
         super().__init__(model, optimizer=optimizer, logger=logger, train_params=train_params)
 
     def run_iter(self, datum, train_mode, **kwargs):
+        """run the iteration step.
+
+        Args:
+            datum (Data): set of input data
+            train_mode (str): the training mode. 'train' or 'test'
+        """
         if train_mode:
             outputs = self.model.train_step(datum, self.optimizer, **kwargs)
         else:
@@ -28,6 +42,11 @@ class EpochTrainer(BaseTrainer):
         self.outputs = outputs
     
     def train(self, data_loader, **kwargs):
+        """the train procedure
+
+        Args:
+            data_loader (Lodaer): as name.
+        """
         self.model.train()
         self.mode = 'train'
         self.data_loader = data_loader
@@ -48,6 +67,11 @@ class EpochTrainer(BaseTrainer):
 
     @torch.no_grad()
     def valid(self, data_loader, **kwargs):
+        """the valid procedure.
+
+        Args:
+            data_loader (Loader): as name.
+        """
         self.model.eval()
         self.mode = 'valid'
         self.data_loader = data_loader
@@ -64,7 +88,12 @@ class EpochTrainer(BaseTrainer):
         self.call_hook("after_valid_epoch")
     
     def run(self, data_loaders, workflow, **kwargs):
-        
+        """the run procedure by the loaders and flow.
+
+        Args:
+            data_loaders (List[Lodaer]): list of data loaders
+            workflow (List[str]): the procedure of workflow
+        """
         assert isinstance(data_loaders, list)
         assert isinstance(workflow[0], tuple)
         assert len(data_loaders) == len(workflow)
@@ -95,6 +124,13 @@ class EpochTrainer(BaseTrainer):
         self.call_hook('after_run')             
 
     def save_checkpoint(self, dst_dir, filename_tmpl, meta=None):
+        """save the checkpoint for the model.
+
+        Args:
+            dst_dir (str): dstiniation of the savedir
+            filename_tmpl (str): the template for the save file.
+            meta (dict, optional): some meta infomation store here. Defaults to None.
+        """
         if meta is None:
             meta = {}
         elif not isinstance(meta, dict):
@@ -112,7 +148,7 @@ class EpochTrainer(BaseTrainer):
         torch.save(checkpoint, filepath)
 
     def load_checkpoint(self, filename, strict=False, revise_keys=[]):
-        """[summary]
+        """Load the checkpoint for the model.
 
         Args:
             filename ([type]): Accept local filepath
@@ -121,9 +157,6 @@ class EpochTrainer(BaseTrainer):
             revise_keys (list, optional): A list of customized keywords to modify the
                 state_dict in checkpoint. Each item is a (pattern, replacement)
                 pair of the regular expression operations. Defaults to [].
-
-        Raises:
-            RuntimeError: [description]
         """
         checkpoint = torch.load(filename)
         if not isinstance(checkpoint, dict):

@@ -1,0 +1,2 @@
+pytorch == 1.8.0
+spatial-correlation-sampler >=0.2.1
