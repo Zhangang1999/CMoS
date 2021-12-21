@@ -8,6 +8,11 @@ from losses import LOSSES
 class EPELoss(nn.Module):
 
     def __init__(self, cfg) -> None:
+        """Supervised Flow loss from flownet.
+
+        Args:
+            cfg (configs): configs of the loss.
+        """
         super().__init__()
 
         self.sparse = cfg.sparse

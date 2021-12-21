@@ -1,9 +1,8 @@
 
 from abc import ABCMeta, abstractmethod
 from typing import Dict
-
+from managers.file_manager import FileManager
 from managers.ops_manager import OpsManager
-from managers.log_manager import LogManager
 from torch.optim import Optimizer
 
 from hooks.base_hook import BaseHook
@@ -18,16 +17,16 @@ class BaseTrainer(metaclass=ABCMeta):
     def __init__(self,
                  model,
                  optimizer=None,
-                 logger=None,
+                 file_manager=None,
                  train_params:Dict={},
                  ) -> None:
         
         self._check_optimizer_if_valid(optimizer)
-        self._check_logger_if_valid(logger)
+        self._check_file_manager_if_valid(file_manager)
 
         self.model = model
         self.optimizer = optimizer
-        self.logger = logger
+        self.file_manager = file_manager
 
         self._rank, self._world_size = get_dist_info()
         self.timestamp = get_time_str()
@@ -61,10 +60,10 @@ class BaseTrainer(metaclass=ABCMeta):
                 f"optimizer should be a torch.optim.Optimizer object, "
                 f"but got {type(optimizer)}")
     
-    def _check_logger_if_valid(self, logger):
-        if not isinstance(logger, LogManager):
+    def _check_file_manager_if_valid(self, file_manager):
+        if not isinstance(file_manager, FileManager):
             raise TypeError(f"logger should be a Logger object, "
-                            f"but got {type(logger)}")
+                            f"but got {type(file_manager)}")
 
     @property
     def model_name(self):

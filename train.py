@@ -1,0 +1,60 @@
+
+import os
+import argparse
+import logging
+import sys
+
+from models import MODELS
+from datasets import DATASETS
+from datasets.loaders import LOADERS
+from engine.trainers import TRAINERS
+from engine.trainers.optimizers import OPTIMIZERS
+
+from managers import FileManager, PathManager
+
+from utils.instantiate import instantiate_from_args
+
+def print_and_save_configs(cfg):
+    msg = '-'*25 + 'Options' + '-'*25 + '\n'
+    for k, v in sorted(vars(cfg).items()):
+        msg += f'{k:>25}: {v:<25}\n'
+    msg += '-'*25 + ' End ' + '-'*25 + '\n'
+    print(msg)
+
+    #TODO: save configs here.
+
+def main(cfg, device, work_dir):
+    print_and_save_configs(cfg)
+    
+    file_manager = FileManager(PathManager(work_dir))
+    for field in file_manager.IN_MANAGEMENT:
+        os.makedirs(getattr(file_manager.path, field), exist_ok=True)
+
+    train_dataset = instantiate_from_args(cfg.data.train, DATASETS, dict(pipeline=cfg.train_pipeline))
+    valid_dataset = instantiate_from_args(cfg.data.valid, DATASETS, dict(pipeline=cfg.valid_pipeline))
+
+    data_loaders = [
+        instantiate_from_args(cfg.data.loader, LOADERS, dict(dataset=dataset, shuffle=shuffle))
+            for dataset, shuffle in [(train_dataset, True), (valid_dataset, False)]
+    ]
+    
+    model = instantiate_from_args(cfg.model, MODELS, dict(device=device))
+    optimizer = instantiate_from_args(cfg.optimizer, OPTIMIZERS, dict(model=model))
+
+    trainer = instantiate_from_args(cfg.trainer, TRAINERS, 
+        dict(model=model, optimizer=optimizer, file_manager=file_manager))
+    trainer.run(data_loaders, cfg.workflow)
+
+if __name__ == "__main__":
+    logging.basicConfig(level=logging.INFO,
+                        stream=sys.stdout,
+                        format="%(asctime)s | (%(filename)s:%(lineno)d | %(level_name)s | %(messages)s)")
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--config", type=str, required=True, help='')
+    parser.add_argument("--device", type=str, default='cuda', help='')
+    parser.add_argument("--work_dir", type=str, default='./', help='')
+
+    args = parser.parse_args()
+    logging.info(args)
+    main(args.config, args.device, args.workdir)

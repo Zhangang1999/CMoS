@@ -44,6 +44,7 @@ class FileManager(object):
         return logs
 
     def ckpts(self, model_name:str):
+        # TODO: return a dict according to phase. ['best', 'latest', 'interrupt'.]
         return os.listdir(self.path.ckpt(model_name))
 
     def metrics(self, model_name:str):

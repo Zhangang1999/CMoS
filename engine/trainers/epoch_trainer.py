@@ -12,7 +12,7 @@ from .base_trainer import TRAINERS, BaseTrainer
 @TRAINERS.register()
 class EpochTrainer(BaseTrainer):
     
-    def __init__(self, model, optimizer=None, logger=None, train_params: Dict = {}) -> None:
+    def __init__(self, model, optimizer=None, file_manager=None, train_params: Dict = {}) -> None:
         """Trainer in epoch fashion.
 
         Args:
@@ -21,19 +21,19 @@ class EpochTrainer(BaseTrainer):
             logger (callable[LOGGER]): the logger to log the info during train. Defaults to None.
             train_params (Dict): with some indicated keys. Defaults to {}.
         """
-        super().__init__(model, optimizer=optimizer, logger=logger, train_params=train_params)
+        super().__init__(model, optimizer=optimizer, file_manager=file_manager, train_params=train_params)
 
     def run_iter(self, datum, train_mode, **kwargs):
         """run the iteration step.
 
         Args:
             datum (Data): set of input data
-            train_mode (str): the training mode. 'train' or 'test'
+            train_mode (str): the training mode. 'train' or 'valid'
         """
         if train_mode:
-            outputs = self.model.train_step(datum, self.optimizer, **kwargs)
+            outputs = self.model.train_step(*datum, self.optimizer, **kwargs)
         else:
-            outputs = self.model.valid_step(datum, self.optimizer, **kwargs)
+            outputs = self.model.valid_step(*datum, self.optimizer, **kwargs)
         
         if not isinstance(outputs, dict):
             raise TypeError(f"outputs should be a dict, "
@@ -110,20 +110,23 @@ class EpochTrainer(BaseTrainer):
         logging.info(f'workflow: {workflow}, max: {self._max_epochs}')
         self.call_hook('before_run')
 
-        while self._epoch < self._max_epochs:
-            for i, flow in enumerate(workflow):
-                mode, epochs = flow
-                epoch_runner = getattr(self, mode)
+        try:
+            while self._epoch < self._max_epochs:
+                for i, flow in enumerate(workflow):
+                    mode, epochs = flow
+                    epoch_runner = getattr(self, mode)
 
-                for _ in range(epochs):
-                    if mode == 'train' and self._epoch >= self._max_epochs:
-                        break
-                    epoch_runner(data_loaders[i], **kwargs) 
+                    for _ in range(epochs):
+                        if mode == 'train' and self._epoch >= self._max_epochs:
+                            break
+                        epoch_runner(data_loaders[i], **kwargs) 
+        except KeyboardInterrupt:
+            self.save_checkpoint("interrupt")
 
         time.sleep(1)
         self.call_hook('after_run')             
 
-    def save_checkpoint(self, dst_dir, filename_tmpl, meta=None):
+    def save_checkpoint(self, status='latest', meta=None):
         """save the checkpoint for the model.
 
         Args:
@@ -131,6 +134,7 @@ class EpochTrainer(BaseTrainer):
             filename_tmpl (str): the template for the save file.
             meta (dict, optional): some meta infomation store here. Defaults to None.
         """
+        filename_tmpl = self.model.name + '_ep{}_{}.pt'
         if meta is None:
             meta = {}
         elif not isinstance(meta, dict):
@@ -138,8 +142,8 @@ class EpochTrainer(BaseTrainer):
                             f"but got {type(meta)}")
         meta.update(time=get_time_str())
 
-        filename = filename_tmpl.format(self._epoch+1)
-        filepath = os.path.join(dst_dir, filename)
+        filename = filename_tmpl.format(self._epoch+1, status)
+        filepath = os.path.join(self.file_manager.path.ckpt(self.model.name), filename)
 
         checkpoint = dict(
             state_dict=self.model.state_dict(),
@@ -147,7 +151,7 @@ class EpochTrainer(BaseTrainer):
         )
         torch.save(checkpoint, filepath)
 
-    def load_checkpoint(self, filename, strict=False, revise_keys=[]):
+    def load_checkpoint(self, status, strict=False, revise_keys=[]):
         """Load the checkpoint for the model.
 
         Args:
@@ -158,10 +162,11 @@ class EpochTrainer(BaseTrainer):
                 state_dict in checkpoint. Each item is a (pattern, replacement)
                 pair of the regular expression operations. Defaults to [].
         """
-        checkpoint = torch.load(filename)
+
+        ckpts = self.file_manager.ckpts(self.models.name)
+        checkpoint = torch.load(ckpts[status])
         if not isinstance(checkpoint, dict):
-            raise RuntimeError(
-                f"No state_dict found in {filename}")
+            raise RuntimeError(f"No state_dict found.")
         
         if 'state_dict' in checkpoint:
             state_dict = checkpoint['state_dict']

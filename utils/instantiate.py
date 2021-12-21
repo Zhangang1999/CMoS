@@ -1,3 +1,4 @@
+import logging
 from typing import Dict
 import inspect
 from managers import OpsManager
@@ -15,6 +16,7 @@ def instantiate_from_args(args:Dict, opsPool: OpsManager, default_args:Dict=None
     if object not in args:
         raise KeyError("cfg should contain a builtin key: `object`")
 
+    logging.info(f"Instantiating {opsPool.name.capitalize()}")
     kwargs = args.copy()
     if default_args is not None:
         kwargs.update(default_args)
