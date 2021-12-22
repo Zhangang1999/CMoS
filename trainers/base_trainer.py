@@ -7,8 +7,8 @@ from torch.optim import Optimizer
 
 from hooks.base_hook import BaseHook
 
-from ...utils.distribute_utils import get_dist_info
-from ...utils.time_utils import get_time_str
+from utils.distribute_utils import get_dist_info
+from utils.time_utils import get_time_str
 
 TRAINERS = OpsManager('trainer')
 
@@ -23,6 +23,7 @@ class BaseTrainer(metaclass=ABCMeta):
         
         self._check_optimizer_if_valid(optimizer)
         self._check_file_manager_if_valid(file_manager)
+        self._check_train_params_if_valid(train_params)
 
         self.model = model
         self.optimizer = optimizer
@@ -37,8 +38,6 @@ class BaseTrainer(metaclass=ABCMeta):
         self._iter = 0
         self._inner_iter = 0
 
-        self._check_train_params_if_valid(train_params)
-
     def _check_train_params_if_valid(self, train_params):
         if not isinstance(train_params, dict):
             raise TypeError(f"train_params should be a dict, "
@@ -46,8 +45,10 @@ class BaseTrainer(metaclass=ABCMeta):
         if 'max_iters' not in train_params and 'max_epochs' not in train_params:
             raise ValueError("Only one of `max_iters` or `max_epochs` can be set")
         
-        self._max_iters = train_params['max_iters']
-        self._max_epochs = train_params['max_epochs']
+        if 'max_iters' in train_params:
+            self._max_iters = train_params['max_iters']
+        if 'max_epochs' in train_params:
+            self._max_epochs = train_params['max_epochs']
 
     def _check_optimizer_if_valid(self, optimizer):
         if isinstance(optimizer, dict):
@@ -70,7 +71,7 @@ class BaseTrainer(metaclass=ABCMeta):
         if hasattr(self.model, 'module'):
             return self.model.module.__class__.__name__
         else:
-            return self.mode.__class__.__name__
+            return self.model.__class__.__name__
     
     @property
     def rank(self):

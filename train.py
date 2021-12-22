@@ -7,8 +7,8 @@ import sys
 from models import MODELS
 from datasets import DATASETS
 from datasets.loaders import LOADERS
-from engine.trainers import TRAINERS
-from engine.trainers.optimizers import OPTIMIZERS
+from trainers import TRAINERS
+from trainers.optimizers import OPTIMIZERS
 
 from managers import FileManager, PathManager
 
