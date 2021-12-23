@@ -8,6 +8,7 @@ from models import MODELS
 from datasets import DATASETS
 from datasets.loaders import LOADERS
 from trainers import TRAINERS
+from trainers.hooks.base_hook import HOOKS
 from trainers.optimizers import OPTIMIZERS
 
 from managers import FileManager, PathManager
@@ -43,6 +44,9 @@ def main(cfg, device, work_dir):
 
     trainer = instantiate_from_args(cfg.trainer, TRAINERS, 
         dict(model=model, optimizer=optimizer, file_manager=file_manager))
+
+    for hook, priority in cfg.hook:
+        trainer.register_hook(instantiate_from_args(hook, HOOKS), priority)
     trainer.run(data_loaders, cfg.workflow)
 
 if __name__ == "__main__":

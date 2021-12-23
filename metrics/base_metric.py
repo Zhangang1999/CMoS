@@ -1,10 +1,15 @@
 
 from typing import Dict, List
 
+from managers.ops_manager import OpsManager
+
+METRICS = OpsManager('metric')
+
 class BaseMetric(object):
     
     def __init__(self, metric:str):
         self.metric = metric
+        self.name_cache = 0
         self.__setattr__(metric+'Dict', {})
 
     @property
