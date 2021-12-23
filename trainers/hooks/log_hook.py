@@ -1,5 +1,5 @@
 
-from time import time
+from time import strftime, time
 from .base_hook import BaseHook, HOOKS
 from utils.time_utils import get_eta_str
 from utils.moving_average import MovingAverage
@@ -10,12 +10,10 @@ class LogHook(BaseHook):
     def __init__(self, 
                  max_window_size=100, 
                  print_loss_freq=50,
-                 print_metric_freq=2
                  ) -> None:
         super().__init__()
         self.max_window_size = max_window_size
         self.print_loss_freq = print_loss_freq
-        self.print_metric_freq = print_metric_freq
 
     def before_run(self, trainer):
         self.loss_avgs = {
@@ -23,6 +21,13 @@ class LogHook(BaseHook):
             for k in trainer.loss_labels
         } 
         self.time_avgs = MovingAverage()
+        self.start_time = time.time()
+    
+    def after_run(self, trainer):
+        self.end_time = time.time()
+        time_msg = "Total training time: {}".format(
+            (self.end_time-self.start_time).strftime("%H:%M:%S"))
+        print(time_msg, flush=True)
 
     def after_train_iter(self, trainer):
         if hasattr(self, 'cur_time'):
@@ -35,19 +40,18 @@ class LogHook(BaseHook):
         for k in loss_labels:
             self.loss_avgs[k].add(losses[k].item())
 
-        if trainer.iter % self.print_loss_freq:
+        if self.every_n_iters(trainer, self.print_loss_freq):
             msg = self._format_loss_msg(trainer, loss_labels)
             print(msg, flush=True)
         
-    def after_train_epoch(self, trainer):
+    def after_valid_epoch(self, trainer):
         assert hasattr(trainer, 'metric_labels')
         assert hasattr(trainer, 'metric_classes')
         metric_labels = trainer.metric_labels
         metric_classes = trainer.metric_classes
 
-        if trainer.epoch % self.print_metric_freq:
-            msg = self._format_metric_msg(trainer, metric_labels, metric_classes)
-            print(msg, flush=True)
+        msg = self._format_metric_msg(trainer, metric_labels, metric_classes)
+        print(msg, flush=True)
 
     def _format_loss_msg(self, trainer, loss_labels):
         stage_msg = "[%3d] %5d ||" % (trainer.epoch, trainer.iter)

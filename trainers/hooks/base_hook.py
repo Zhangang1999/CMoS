@@ -56,10 +56,10 @@ class BaseHook(object):
     def before_train_iter(self, trainer):
         self.before_iter(trainer)
 
-    def after_valid_iter(self, trainer):
+    def after_train_iter(self, trainer):
         self.after_iter(trainer)
 
-    def before_train_iter(self, trainer):
+    def before_valid_iter(self, trainer):
         self.before_iter(trainer)
 
     def after_valid_iter(self, trainer):

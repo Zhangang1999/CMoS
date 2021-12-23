@@ -27,6 +27,7 @@ class LrHook(BaseHook):
             return
         self._next_lr = self._get_next_lr(trainer)
         self._set_lr(trainer, self._next_lr)
+        #TODO: Add log here.
 
     def _get_next_lr(self, trainer):
         curr_lr = trainer.current_lr()

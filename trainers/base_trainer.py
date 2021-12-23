@@ -90,6 +90,10 @@ class BaseTrainer(metaclass=ABCMeta):
         return self._iter
     
     @property
+    def epoch(self):
+        return self._epoch
+    
+    @property
     def inner_iter(self):
         return self._inner_iter
     
