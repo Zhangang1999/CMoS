@@ -1,6 +1,6 @@
 
 from time import strftime, time
-from .base_hook import BaseHook, HOOKS
+from hooks import BaseHook, HOOKS
 from utils.time_utils import get_eta_str
 from utils.moving_average import MovingAverage
 

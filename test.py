@@ -2,7 +2,6 @@
 import os
 import argparse
 import logging
-import re
 import sys
 
 from models import MODELS

@@ -1,9 +1,9 @@
 
-from .base_metric import METRICS, BaseMetric
+from metrics import METRICS, BaseMetric
 import numpy as np
 
 @METRICS.register()
-class Acc(BaseMetric):
+class ACC(BaseMetric):
 
     def __init__(self, metric: str, num_classes):
         super().__init__(metric)
@@ -15,16 +15,17 @@ class Acc(BaseMetric):
             self.name_cache += 1
 
         self.ResDict.update({name: {}})
-        for _cls in range(1, self.num_classes):
-            p = (x == _cls).astype(np.bool).reshape(-1)
-            t = (y == _cls).astype(np.bool).reshape(-1)
-            acc = self._calc_acc(p, t)
-            self.ResDict[name][str(_cls)] = acc
+        for _cls in range(self.num_classes):
+            p = (x == _cls).astype(bool).reshape(-1)
+            t = (y == _cls).astype(bool).reshape(-1)
+            conf_matrix = self._calc_tp_fp_tn_fn(p, t)
+            self.ResDict[name][_cls] = conf_matrix
+        # self.ResDict[name]['acc'] = [acc]
 
     @staticmethod
-    def _calc_acc(x, y):
-        tp = np.count_nonzero(x & y)
-        # fp = np.count_nonzero((not x) & y)
-        # tn = np.count_nonzero((not x) & (not y))
-        # fn = np.count_nonzero(x & (not y))
-        return tp / x.shape[0]
+    def _calc_tp_fp_tn_fn(x, y):
+        tp = np.count_nonzero(x * y)
+        fp = np.count_nonzero(x * (~y))
+        tn = np.count_nonzero((~x) * (~y))
+        fn = np.count_nonzero((~x) * y)
+        return [tp, fp, tn, fn]

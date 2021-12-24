@@ -5,7 +5,7 @@ import json
 import logging
 from typing import Dict
 
-from .path_manager import PathManager
+from managers.path_manager import PathManager
 
 class FileManager(object):
     IN_MANAGEMENT = [

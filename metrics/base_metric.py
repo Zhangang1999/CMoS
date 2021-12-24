@@ -1,10 +1,6 @@
 
 from typing import Dict, List
 
-from managers.ops_manager import OpsManager
-
-METRICS = OpsManager('metric')
-
 class BaseMetric(object):
     
     def __init__(self, metric:str):
@@ -14,7 +10,7 @@ class BaseMetric(object):
 
     @property
     def ResDict(self):
-        return self.__getattr__(self.metric+'Dict')
+        return getattr(self, self.metric+'Dict')
     
     def __call__(self, x, y):
         raise NotImplementedError
@@ -29,8 +25,9 @@ class BaseMetric(object):
             Dict: Gathered Dict with target keys.
         """
         def _collect(d, t):
-            if not isinstance(d, Dict): return []
-            if t in d: return d[t]
+            if not isinstance(d, dict): return []
+            if t in d and isinstance(d[t], list):
+                return d[t]
 
             s = []
             for k in d:

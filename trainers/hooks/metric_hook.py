@@ -6,7 +6,7 @@ from metrics import METRICS
 from utils.instantiate import instantiate_from_args
 from utils.time_utils import LogTimer
 
-from .base_hook import HOOKS, BaseHook
+from hooks import HOOKS, BaseHook
 
 
 @HOOKS.register()

@@ -1,5 +1,5 @@
 
-from .base_hook import HOOKS, BaseHook
+from hooks import HOOKS, BaseHook
 
 @HOOKS.register()
 class VisualHook(BaseHook):

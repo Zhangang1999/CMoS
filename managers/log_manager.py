@@ -2,8 +2,8 @@ import json
 import time
 from typing import Dict
 
-from .file_manager import FileManager
-from ..utils.time_utils import get_time_str
+from managers.file_manager import FileManager
+from utils.time_utils import get_time_str
 
 class LogManager(object):
     SESSION = [

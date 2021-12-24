@@ -1,5 +1,5 @@
 import logging
-from .base_hook import HOOKS, BaseHook
+from hooks import HOOKS, BaseHook
 from torch.nn.utils import clip_grad
 
 @HOOKS.register()
