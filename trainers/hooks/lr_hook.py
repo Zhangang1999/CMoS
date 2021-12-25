@@ -4,43 +4,63 @@ from hooks import BaseHook, HOOKS
 
 @HOOKS.register()
 class LrHook(BaseHook):
+    POLICY = [
+        'cos',
+        'step'
+    ]
 
-    def __init__(self, policy, extra_kwargs={}) -> None:
+    def __init__(self, policy:str, extra_kwargs={}) -> None:
         super().__init__()
+        assert policy in self.POLICY
         self.policy = policy
         self.extra_kwargs = extra_kwargs
 
-        self._init_lr = []
-        self._next_lr = []
+        self.init_lr = []
+        self.next_lr = []
 
     def before_run(self, trainer):
+        """Record the init lr and get the necessary args."""
+
         for group in trainer.optimizer.param_groups:
-            self._init_lr.append(group['lr'])
+            self.init_lr.append(group['lr'])
 
         if self.policy == 'step':
             self.step_idx = 0
             self.gamma = self.extra_kwargs['gamma']
             self.lr_steps = self.extra_kwargs['lr_steps']
+        
+            trainer.file_manager.log_log(
+                session='debug',
+                data=dict(
+                    lr_policy=self.policy,
+                    kwargs=self.extra_kwargs)
+            )
 
-    def before_train_iter(self, trainer):
-        if trainer.iter == 0: 
-            return
-        self._next_lr = self._get_next_lr(trainer)
-        self._set_lr(trainer, self._next_lr)
-        #TODO: Add log here.
+    def after_train_iter(self, trainer):
+        """get and set the next lr."""
+        
+        self.next_lr = self._get_next_lr(trainer)
+        self._set_lr(trainer, self.next_lr)
+
+        trainer.file_manager.log_log(
+            session='debug',
+            data={"lr": self.next_lr}
+        )
 
     def _get_next_lr(self, trainer):
+        """Get the next learning rate."""
+
         curr_lr = trainer.current_lr()
 
         if self.policy == 'cos':
-            _next_lr = [lr * 0.5 * (1. + math.cos(math.pi * trainer.iter / trainer.max_iters))
+            next_lr = [lr * 0.5 * (1. + math.cos(math.pi * trainer.iter / trainer.max_iters))
                         for lr in curr_lr]
-        
-        if self.policy == 'step' and trainer.iter >= self.lr_steps[self.step_idx]:
-            _next_lr = [lr * (self.gamma**self.step_index) for lr in curr_lr] 
+        elif self.policy == 'step' and trainer.iter >= self.lr_steps[self.step_idx]:
+            next_lr = [lr * (self.gamma**self.step_index) for lr in curr_lr] 
 
-        return _next_lr
+        return next_lr
 
     def _set_lr(self, trainer, lrs):
+        """Set the learning rate."""
         for group, lr in zip(trainer.optimizer.param_groups, lrs):
             group['lr'] = lr

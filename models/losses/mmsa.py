@@ -1,16 +1,16 @@
-from models.losses import epe
+from typing import Dict
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-class CMoSMMSALoss(nn.Module):
+class MMSALoss(nn.Module):
 
     def __init__(self, cfg) -> None:
         super().__init__()
-
         self.loss_labels = cfg.loss_labels
 
-    def forward(self, pred, gts):
+    def forward(self, pred:Dict, gts:Dict) -> Dict:
         pred_flows = pred['flow']
         gt_flows = gts['flow']
 
@@ -32,7 +32,7 @@ class CMoSMMSALoss(nn.Module):
         eps = 1e-8
         prev, post = torch.split(y, 2, 1)
 
-        loss_wrap = 0.
+        loss_warp = 0.
         for x in xs:
             prev = F.adaptive_avg_pool2d(prev, x.size())
             post = F.adaptive_avg_pool2d(post, x.size())
@@ -43,8 +43,8 @@ class CMoSMMSALoss(nn.Module):
             prev_loss = torch.norm(prev-post_warp_to_prev+eps, p=2, dim=1)
             post_loss = torch.norm(post-prev_warp_to_post+eps, p=2, dim=1)
 
-            loss_wrap += 0.5 * (post_loss+prev_loss).mean()
-        return loss_wrap
+            loss_warp += 0.5 * (post_loss+prev_loss).mean()
+        return loss_warp
 
     def _flow_smooth_loss(self, xs, y, gradient):
         loss_smooth = 0.

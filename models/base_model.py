@@ -2,13 +2,16 @@
 import torch
 import torch.nn as nn
 
+from utils.config import Config
+from datasets.meta_desc import DataSample
+
 class BaseModel(nn.Module):
 
-    def __init__(self, cfg) -> None:
+    def __init__(self, cfg:Config) -> None:
         super().__init__()
         self.cfg = cfg
     
-    def forward(self, x):
+    def forward(self, x:DataSample):
         return x
 
     def init_weights(self, init_type='he2'):

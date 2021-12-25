@@ -1,8 +1,12 @@
 
-from time import strftime, time
-from hooks import BaseHook, HOOKS
-from utils.time_utils import get_eta_str
+from time import time
+from typing import List
+
 from utils.moving_average import MovingAverage
+from utils.time_utils import get_eta_str
+
+from hooks import HOOKS, BaseHook
+
 
 @HOOKS.register()
 class LogHook(BaseHook):
@@ -16,20 +20,30 @@ class LogHook(BaseHook):
         self.print_loss_freq = print_loss_freq
 
     def before_run(self, trainer):
+        """Init the moving averages and record the time."""
+
         self.loss_avgs = {
             k: MovingAverage(self.max_window_size)
             for k in trainer.loss_labels
         } 
         self.time_avgs = MovingAverage()
         self.start_time = time.time()
-    
+
     def after_run(self, trainer):
-        self.end_time = time.time()
+        """record the time and print the time message."""
+
         time_msg = "Total training time: {}".format(
             (self.end_time-self.start_time).strftime("%H:%M:%S"))
         print(time_msg, flush=True)
 
+        trainer.file_manager.log_log(
+            session='train',
+            data={'msg': time_msg}
+        )
+
     def after_train_iter(self, trainer):
+        """record the time and print the loss message."""
+
         if hasattr(self, 'cur_time'):
             self.cur_elapsed = time.time() - self.cur_time
             self.time_avgs.add(self.cur_elapsed)
@@ -43,9 +57,15 @@ class LogHook(BaseHook):
         if self.every_n_iters(trainer, self.print_loss_freq):
             msg = self._format_loss_msg(trainer, loss_labels)
             print(msg, flush=True)
-        
+
+        trainer.file_manager.log_log(
+            session='train',
+            data={'msg': msg}
+        )
+
     def after_valid_epoch(self, trainer):
-        assert hasattr(trainer, 'metric_labels')
+        """format and print the metric message."""
+
         assert hasattr(trainer, 'metric_classes')
         metric_labels = trainer.metric_labels
         metric_classes = trainer.metric_classes
@@ -53,7 +73,14 @@ class LogHook(BaseHook):
         msg = self._format_metric_msg(trainer, metric_labels, metric_classes)
         print(msg, flush=True)
 
-    def _format_loss_msg(self, trainer, loss_labels):
+        trainer.file_manager.log_log(
+            session='train',
+            data={'msg': msg}
+        )
+
+    def _format_loss_msg(self, trainer, loss_labels:List[str]) -> str:
+        """format the loss messages."""
+
         stage_msg = "[%3d] %5d ||" % (trainer.epoch, trainer.iter)
 
         losses = sum([[k, self.loss_avgs[k].get_avg()] for k in loss_labels], [])
@@ -66,6 +93,8 @@ class LogHook(BaseHook):
         return stage_msg + loss_msg + time_msg
 
     def _format_metric_msg(self, trainer, metric_labels, metric_classes):
+        """format the metric messages."""
+    
         make_row = lambda vals: (' %5s |' * len(vals)) % tuple(vals)
         make_sep = lambda n: ('-------+' * n)
 

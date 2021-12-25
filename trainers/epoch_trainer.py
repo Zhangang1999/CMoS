@@ -3,17 +3,22 @@ import re
 import os
 import logging
 import time
-from typing import Dict
+from typing import Dict, List, Tuple
 from collections import OrderedDict
 
 from utils.time_utils import get_time_str
-from .base_trainer import TRAINERS, BaseTrainer
+from trainers import TRAINERS, BaseTrainer
 
 @TRAINERS.register()
 class EpochTrainer(BaseTrainer):
     
-    def __init__(self, model, optimizer=None, file_manager=None, train_params: Dict = {}) -> None:
-        """Trainer in epoch fashion.
+    def __init__(self,
+                 model, 
+                 optimizer=None, 
+                 file_manager=None, 
+                 train_params:Dict = {}
+                 ) -> None:
+        """Trainer for epoch training fashion.
 
         Args:
             model (callable[MODELS]): the model to train
@@ -21,9 +26,11 @@ class EpochTrainer(BaseTrainer):
             logger (callable[LOGGER]): the logger to log the info during train. Defaults to None.
             train_params (Dict): with some indicated keys. Defaults to {}.
         """
-        super().__init__(model, optimizer=optimizer, file_manager=file_manager, train_params=train_params)
+        super().__init__(model, 
+                         optimizer=optimizer, file_manager=file_manager, train_params=train_params)
+        assert self._max_epochs is not None
 
-    def run_iter(self, datum, train_mode, **kwargs):
+    def run_iter(self, datum:List, train_mode:bool, **kwargs):
         """run the iteration step.
 
         Args:
@@ -42,7 +49,10 @@ class EpochTrainer(BaseTrainer):
         self.outputs = outputs
     
     def train(self, data_loader, **kwargs):
-        """the train procedure
+        """the train procedure. The train loop including:
+                1. call hooks
+                2. run the iter step
+                3. call hooks
 
         Args:
             data_loader (Lodaer): as name.
@@ -50,8 +60,7 @@ class EpochTrainer(BaseTrainer):
         self.model.train()
         self.mode = 'train'
         self.data_loader = data_loader
-        self._max_iters = self._max_epochs * len(self.data_loader)
-        
+
         self.call_hook('before_train_epoch')
         time.sleep(2)
 
@@ -67,7 +76,10 @@ class EpochTrainer(BaseTrainer):
 
     @torch.no_grad()
     def valid(self, data_loader, **kwargs):
-        """the valid procedure.
+        """the valid procedure. The valid loop inculding:
+                1. call hooks
+                2. run the iter loop
+                3. call hooks
 
         Args:
             data_loader (Loader): as name.
@@ -87,8 +99,11 @@ class EpochTrainer(BaseTrainer):
         
         self.call_hook("after_valid_epoch")
     
-    def run(self, data_loaders, workflow, **kwargs):
-        """the run procedure by the loaders and flow.
+    def run(self, data_loaders:List, workflow:List[str], **kwargs):
+        """the run procedure by the loaders and flow, including:
+                1. call hooks
+                2. run workflow
+                3. call hooks
 
         Args:
             data_loaders (List[Lodaer]): list of data loaders
@@ -97,7 +112,6 @@ class EpochTrainer(BaseTrainer):
         assert isinstance(data_loaders, list)
         assert isinstance(workflow[0], tuple)
         assert len(data_loaders) == len(workflow)
-        assert self._max_epochs is not None
 
         for i, flow in enumerate(workflow):
             mode, epochs = flow
@@ -126,14 +140,16 @@ class EpochTrainer(BaseTrainer):
         time.sleep(1)
         self.call_hook('after_run')             
 
-    def save_checkpoint(self, status='latest', meta=None):
-        """save the checkpoint for the model.
+    def save_checkpoint(self, status:str='latest', meta:Dict=None):
+        """save the checkpoint for the model with the specific status.
 
         Args:
             dst_dir (str): dstiniation of the savedir
             filename_tmpl (str): the template for the save file.
             meta (dict, optional): some meta infomation store here. Defaults to None.
         """
+        assert status in self.file_manager.CKPT_STATUS
+
         filename_tmpl = self.model.name + '_ep{}_{}.pt'
         if meta is None:
             meta = {}
@@ -143,7 +159,7 @@ class EpochTrainer(BaseTrainer):
         meta.update(time=get_time_str())
 
         filename = filename_tmpl.format(self._epoch+1, status)
-        filepath = os.path.join(self.file_manager.path.ckpt(self.model.name), filename)
+        filepath = os.path.join(self.file_manager.ckpt(self.model.name), filename)
 
         checkpoint = dict(
             state_dict=self.model.state_dict(),
@@ -151,7 +167,7 @@ class EpochTrainer(BaseTrainer):
         )
         torch.save(checkpoint, filepath)
 
-    def load_checkpoint(self, status, strict=False, revise_keys=[]):
+    def load_checkpoint(self, status:str, strict:bool=False, revise_keys:List[Tuple[str, str]]=[]):
         """Load the checkpoint for the model.
 
         Args:
@@ -162,6 +178,7 @@ class EpochTrainer(BaseTrainer):
                 state_dict in checkpoint. Each item is a (pattern, replacement)
                 pair of the regular expression operations. Defaults to [].
         """
+        assert status in self.file_manager.CKPT_STATUS
 
         ckpts = self.file_manager.ckpts(self.models.name)
         checkpoint = torch.load(ckpts[status])

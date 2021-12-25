@@ -1,16 +1,23 @@
 from collections import OrderedDict
+from typing import Dict
 
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-
 from spatial_correlation_sampler import spatial_correlation_sample
+
 from backbones import BACKBONES
+
 
 @BACKBONES.register()
 class FlowNetS(nn.Module):
     expansion = 1
     def __init__(self, cfg) -> None:
+        """the flownet backbone for optical flow estimiation.
+
+        Args:
+            cfg ([type]): configs for building the net
+        """
         super().__init__()
 
         self.encoder_layers = self._build(cfg.encoder, conv)
@@ -20,7 +27,7 @@ class FlowNetS(nn.Module):
 
         self._init()
 
-    def _build(self, layer_cfgs, layer_func):
+    def _build(self, layer_cfgs:Dict, layer_func):
         layers = OrderedDict()
         for scope, layer_args in layer_cfgs.items():
             layer = sum([layer_func(*args) for args in layer_args], [])
@@ -37,8 +44,7 @@ class FlowNetS(nn.Module):
                 nn.init.constant_(m.weight, 1)
                 nn.init.constant_(m.bias, 0)
 
-    def forward(self, x):
-        
+    def forward(self, x) -> Dict:
         encs = OrderedDict()
         for scope, layer in self.encoder_layers.items():
             x = layer(x)
@@ -76,7 +82,7 @@ class FlowNetC(FlowNetS):
         self.pre_encoder_layers = self._build(cfg.pre_encoder, conv)
         self.redir_layer = self._build(cfg.redir_layer, conv)
 
-    def forward(self, x):
+    def forward(self, x) -> Dict:
         x1, x2 = x[:, :3], x[:, 3:]
 
         for scope, layer in self.pre_encoder_layers.items():
@@ -113,9 +119,7 @@ class FlowNetC(FlowNetS):
         
         return pred_outs
 
-# -----------------------------------------------------------
 # Operation functions below
-
 def concat(feats, dim):
     assert isinstance(feats, list)
 

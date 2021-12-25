@@ -1,8 +1,11 @@
+from typing import Dict
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
 from losses import LOSSES
+
 
 @LOSSES.register()
 class EPELoss(nn.Module):
@@ -21,7 +24,7 @@ class EPELoss(nn.Module):
 
         self.loss_labels = cfg.loss_labels
 
-    def forward(self, preds, gts):
+    def forward(self, preds:Dict, gts:Dict) -> Dict:
         flows = preds['flow']
 
         losses = {}
@@ -69,7 +72,7 @@ class EPELoss(nn.Module):
         return loss
 
     def _real_EPE(self, x, y, sparse=False):
-        b, _, h, w = y.size()
+        _, _, h, w = y.size()
         upsampled_x = F.interpolate(x, (h, w), mode='bilinear', align_corners=False)
         return self._EPE(upsampled_x, y)
 
@@ -81,9 +84,11 @@ class EPELoss(nn.Module):
         the strategy here is to use max pooling for positive values and "min pooling"
         for negative values, the two results are then summed.
         This technique allows sparsity to be minized, contrary to nearest interpolation,
-        which could potentially lose information for isolated data points.'''
+        which could potentially lose information for isolated data points.
+        '''
 
         positive = (x > 0).float()
         negative = (x < 0).float()
-        output = F.adaptive_max_pool2d(x * positive, size) - F.adaptive_max_pool2d(-x * negative, size)
+        output = F.adaptive_max_pool2d(x * positive, size) \
+               - F.adaptive_max_pool2d(-x * negative, size)
         return output

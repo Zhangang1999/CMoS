@@ -1,5 +1,4 @@
 
-import os
 import argparse
 import logging
 import sys
@@ -11,7 +10,7 @@ from trainers import TRAINERS
 from trainers.hooks.base_hook import HOOKS
 from trainers.optimizers import OPTIMIZERS
 
-from managers import FileManager, PathManager
+from managers import FileManager
 
 from utils.instantiate import instantiate_from_args
 
@@ -27,9 +26,8 @@ def print_and_save_configs(cfg):
 def main(cfg, device, work_dir):
     print_and_save_configs(cfg)
     
-    file_manager = FileManager(PathManager(work_dir))
-    for field in file_manager.IN_MANAGEMENT:
-        os.makedirs(getattr(file_manager.path, field), exist_ok=True)
+    file_manager = FileManager(work_dir)
+    file_manager.makedirs(cfg.model.name)
 
     train_dataset = instantiate_from_args(cfg.data.train, DATASETS, dict(pipeline=cfg.train_pipeline))
     valid_dataset = instantiate_from_args(cfg.data.valid, DATASETS, dict(pipeline=cfg.valid_pipeline))

@@ -1,23 +1,17 @@
 
 from abc import ABCMeta, abstractmethod
-from typing import Dict
+from typing import Dict, List
+
 from managers.file_manager import FileManager
-from managers.ops_manager import OpsManager
 from torch.optim import Optimizer
-
-from hooks.base_hook import BaseHook
-
 from utils.distribute_utils import get_dist_info
-from utils.time_utils import get_time_str
-
-TRAINERS = OpsManager('trainer')
 
 class BaseTrainer(metaclass=ABCMeta):
 
     def __init__(self,
                  model,
-                 optimizer=None,
-                 file_manager=None,
+                 optimizer,
+                 file_manager,
                  train_params:Dict={},
                  ) -> None:
         
@@ -27,16 +21,20 @@ class BaseTrainer(metaclass=ABCMeta):
 
         self.model = model
         self.optimizer = optimizer
+        
         self.file_manager = file_manager
+        self.file_manager.model_name = model.name
+        self.file_manager.log_init()
 
         self._rank, self._world_size = get_dist_info()
-        self.timestamp = get_time_str()
 
         self.mode = None
         self._hooks = []
         self._epoch = 0
         self._iter = 0
         self._inner_iter = 0
+        self._max_epochs = None
+        self._max_iters = None
 
     def _check_train_params_if_valid(self, train_params):
         if not isinstance(train_params, dict):
@@ -124,7 +122,7 @@ class BaseTrainer(metaclass=ABCMeta):
     def load_checkpoint(self, filename, strict=False):
         pass
 
-    def current_lr(self):
+    def current_lr(self) -> List:
         if isinstance(self.optimizer, Optimizer):
             lr = [group['lr'] for group in self.optimizer.param_groups]
         elif isinstance(self.optimizer, dict):

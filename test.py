@@ -11,7 +11,7 @@ from trainers import TRAINERS
 from trainers.optimizers import OPTIMIZERS
 from metrics import METRICS
 
-from managers import FileManager, PathManager
+from managers import FileManager
 
 from utils.instantiate import instantiate_from_args
 

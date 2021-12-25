@@ -8,3 +8,17 @@ from managers.ops_manager import OpsManager
 HOOKS = OpsManager('hook')
 
 from .base_hook import BaseHook
+from .log_hook import LogHook
+from .lr_hook import LrHook
+from .metric_hook import MetricHook
+from .optimizer_hook import OptimizerHook
+from .visual_hook import VisualHook
+
+__all__ = [
+    'BaseHook',
+    'LogHook',
+    'LrHook',
+    'MetricHook',
+    'OptimizerHook',
+    'VisualHook',
+]

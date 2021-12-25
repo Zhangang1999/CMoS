@@ -8,7 +8,9 @@ from managers.ops_manager import OpsManager
 LOSSES = OpsManager('loss')
 
 from .epe import EPELoss
+from .mmsa import MMSALoss
 
 __all__ = [
-    'EPELoss'
+    'EPELoss',
+    'MMSALoss',
 ]

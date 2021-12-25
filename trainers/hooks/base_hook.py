@@ -11,7 +11,6 @@ class BaseHook(object):
 
     def __init__(self) -> None:
         super().__init__()
-
         self._priority = 0
     
     @property
@@ -83,7 +82,7 @@ class BaseHook(object):
 
     def get_triggered_stages(self):
         trigger_stages = set()
-        for stage in BaseHook.STAGES:
+        for stage in self.STAGES:
             if self._check_method_or_stage_if_overridden(stage):
                 trigger_stages.add(stage)
 
@@ -98,4 +97,4 @@ class BaseHook(object):
             if self._check_method_or_stage_if_overridden(method):
                 trigger_stages.update(map_stages)
         
-        return [stage for stage in BaseHook.STAGES if stage in trigger_stages]
+        return [stage for stage in self.STAGES if stage in trigger_stages]
