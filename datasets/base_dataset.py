@@ -1,7 +1,10 @@
 
 from abc import ABCMeta
-from datasets.meta_desc import DatasetMeta
+
 from torch.utils.data import Dataset
+
+from datasets.meta_desc import DatasetMeta
+
 
 class BaseDataset(Dataset, metaclass=ABCMeta):
 
@@ -15,4 +18,4 @@ class BaseDataset(Dataset, metaclass=ABCMeta):
 
     def __len__(self):
         return len(self.dataset_meta.data_infos)
-        
+    

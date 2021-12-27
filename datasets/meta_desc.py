@@ -23,15 +23,15 @@ class SampleMeta(object):
     @property
     def name(self):
         return self._file_name
-    
+
     @property
     def format(self):
         return self._file_fmt
-    
+
     @property
     def ori_shape(self):
         return self._ori_shape
-    
+
     @property
     def cur_shape(self):
         return self._cur_shape
@@ -63,7 +63,7 @@ class DataSample(object):
         self._gt = gt
         self._ori_gt = gt
         self._meta = meta
-    
+
     @property
     def data(self):
         return self._data
@@ -71,7 +71,7 @@ class DataSample(object):
     @property
     def gt(self):
         return self._gt
-    
+
     @property
     def ori_gt(self):
         return self._ori_gt
@@ -79,7 +79,7 @@ class DataSample(object):
     @property
     def meta(self):
         return self._meta
-    
+
     def __repr__(self) -> str:
         return self.meta.__repr__()
 
@@ -93,10 +93,10 @@ class DatasetMeta(object):
 
         self._abs_path = abs_path
         self._data_infos = data_infos
-    
+
     def __len__(self):
         return len(self._data_infos)
-    
+
     @property
     def path(self):
         return self._abs_path
@@ -104,7 +104,7 @@ class DatasetMeta(object):
     @property
     def data_infos(self):
         return self._data_infos
-    
+
     def __repr__(self):
         repr_str = f"Dataset in: {self.path}\n"
         return repr_str

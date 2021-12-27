@@ -13,6 +13,7 @@ from .lr_hook import LrHook
 from .metric_hook import MetricHook
 from .optimizer_hook import OptimizerHook
 from .visual_hook import VisualHook
+from .model_hook import ModelHook
 
 __all__ = [
     'BaseHook',
@@ -21,4 +22,5 @@ __all__ = [
     'MetricHook',
     'OptimizerHook',
     'VisualHook',
+    'ModelHook'
 ]

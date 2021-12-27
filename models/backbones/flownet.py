@@ -20,19 +20,26 @@ class FlowNetS(nn.Module):
         """
         super().__init__()
 
-        self.encoder_layers = self._build(cfg.encoder, conv)
-        self.decoder_layers = self._build(cfg.decoder, deconv)
-        self.predict_layers = self._build(cfg.predict, predict)
-        self.upsample_layers = self._build(cfg.upsample, nn.ConvTranspose2d)
+        self.encoder_layers, out_channels = self._build(cfg.encoder, cfg.in_channels, conv)
+        self.decoder_layers, out_channels = self._build(cfg.decoder, out_channels, deconv)
+        self.upsample_layers, _ = self._build(cfg.upsample, out_channels, upsample)
+        self.predict_layers, out_channels = self._build(cfg.predict, out_channels, predict) 
 
         self._init()
 
-    def _build(self, layer_cfgs:Dict, layer_func):
+    def _build(self, layer_cfgs:Dict, in_channels, layer_func):
+        
+        def build(args):
+            nonlocal in_channels
+            layer = layer_func(in_channels, *args)
+            in_channels = args[0]
+            return layer
+
         layers = OrderedDict()
         for scope, layer_args in layer_cfgs.items():
-            layer = sum([layer_func(*args) for args in layer_args], [])
+            layer = sum([build(args) for args in layer_args], [])
             layers.update({f'{scope}': layer})
-        return nn.ModuleDict(layers)
+        return nn.ModuleDict(layers), in_channels
 
     def _init(self):
         for m in self.modules():
@@ -71,17 +78,18 @@ class FlowNetS(nn.Module):
             pred_outs['flow'] = flows[::-1]
         else:
             pred_outs['flow'] = flow
-        
+
         return pred_outs
 
 @BACKBONES.register()
 class FlowNetC(FlowNetS):
     expansion = 1
     def __init__(self, cfg) -> None:
+        self.pre_encoder_layers, out_channels = self._build(cfg.pre_encoder, cfg.in_channels, conv)
+        self.redir_layer, out_channels = self._build(cfg.redir_layer, out_channels, conv)
+        cfg.in_channels = out_channels
         super().__init__(cfg)
-        self.pre_encoder_layers = self._build(cfg.pre_encoder, conv)
-        self.redir_layer = self._build(cfg.redir_layer, conv)
-
+        
     def forward(self, x) -> Dict:
         x1, x2 = x[:, :3], x[:, 3:]
 
@@ -97,7 +105,7 @@ class FlowNetC(FlowNetS):
 
         enc_scopes = list(encs.keys())[::-1]
         last_scope = enc_scopes.pop(-1)
-       
+
         dec, flow_up = None, None
         flows = []
         for scope in enc_scopes:
@@ -157,6 +165,16 @@ def predict(in_channels):
                      stride=1,
                      padding=1,
                      bias=False)
+
+def upsample(place_holder,
+             in_channels,
+             out_channels):
+    return nn.ConvTranspose2d(in_channels,
+                              out_channels, 
+                              kernel_size=2, 
+                              stride=1, 
+                              padding=0, 
+                              bias=False),
 
 def deconv(in_channels, out_channels):
     return nn.Sequential(

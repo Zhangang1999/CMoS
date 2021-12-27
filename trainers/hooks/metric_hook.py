@@ -16,6 +16,8 @@ class MetricHook(BaseHook):
     def __init__(self, metric_cfg) -> None:
         super().__init__()
         self.metric_cfg = metric_cfg
+        self.best_metric = -1
+        self.is_ascending = metric_cfg.is_ascending
 
     def before_run(self, trainer):
         """Init some arguments."""
@@ -69,9 +71,30 @@ class MetricHook(BaseHook):
             metrics = self._collect_metrics(trainer.metric_classes)
             trainer.outputs.update(metrics=metrics)
 
+        self._update_best_metric(metrics, trainer)
+
         trainer.file_manager.log_log(
             session='status',
             data=dict(msg="Summaring metrics.")
+        )
+
+    def _update_best_metric(self, metrics, trainer):
+        
+        curr_metric = metrics['all'][trainer.metric_labels[0]]
+        if (self.best_metric > curr_metric and self.is_ascending) \
+            or (self.best_metric < curr_metric and not self.is_ascending):
+            return
+
+        self.best_metric = curr_metric
+        trainer.save_checkpoint('best')
+
+        trainer.file_manager.log_log(
+            session='status',
+            data=dict(
+                msg="Save checkpoint best.",
+                key=trainer.metric_labels[0],
+                value=self.best_metric
+            )
         )
 
     def _collect_metrics(self, metric_classes:List[str]) -> Dict:

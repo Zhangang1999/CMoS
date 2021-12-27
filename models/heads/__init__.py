@@ -6,3 +6,9 @@
 
 from managers.ops_manager import OpsManager
 HEADS = OpsManager('head')
+
+from .mmsa import MMSAHead
+
+__all__ = [
+    'MMSAHead',
+]
