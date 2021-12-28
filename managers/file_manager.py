@@ -94,6 +94,15 @@ class FileManager(object):
             metrics[metric] = file
         return metrics
 
+    def visuals(self, model_name:str=None) -> Dict:
+        model_name = self._check_model_name(model_name)
+
+        visuals = {}
+        for file in os.listdir(self.metric(model_name)):
+            visual_type = os.path.basename(file).split('_')[0]
+            visuals[visual_type] = file
+        return visuals
+
     # ACTIONS
     def log_init(self, model_name:str=None, data:Dict={}) -> None:
         """Initialize the log with given data,

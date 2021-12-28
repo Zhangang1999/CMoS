@@ -87,7 +87,7 @@ class DatasetMeta(object):
 
     def __init__(self,
                  abs_path=None,
-                 data_infos:List[DataSample]=[],
+                 data_infos=None,
                  ) -> None:
         super().__init__()
 

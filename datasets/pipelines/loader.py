@@ -18,7 +18,6 @@ class Loader(object):
 
         #TODO: Change dtype.
 
-        #TODO: Record meta.
         data_sample.meta.ori_shape = image.shape[:2]
         data_sample.meta.cur_shape = image.shape[:2]
 
