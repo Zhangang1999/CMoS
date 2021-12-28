@@ -34,7 +34,7 @@ def calc_print_and_save_results(metrics):
 def main(device, work_dir, display=False):
     cfg = load_and_print_configs()
     
-    file_manager = FileManager(PathManager(work_dir))
+    file_manager = FileManager(work_dir)
     for field in file_manager.IN_MANAGEMENT:
         os.makedirs(getattr(file_manager.path, field), exist_ok=True)
 

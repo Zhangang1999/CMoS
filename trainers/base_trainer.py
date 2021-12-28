@@ -5,6 +5,7 @@ from typing import Dict, List
 from managers.file_manager import FileManager
 from torch.optim import Optimizer
 from utils.distribute_utils import get_dist_info
+from trainers.hooks import HOOKS, BaseHook
 
 class BaseTrainer(metaclass=ABCMeta):
 

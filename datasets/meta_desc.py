@@ -6,11 +6,11 @@ ShapeType = Tuple[int, int]
 class SampleMeta(object):
 
     def __init__(self, 
-                 file_name:str,
-                 file_fmt:str,
-                 ori_shape:ShapeType,
-                 cur_shape:ShapeType,
-                 abs_path:str,
+                 file_name:str=None,
+                 file_fmt:str=None,
+                 ori_shape:ShapeType=None,
+                 cur_shape:ShapeType=None,
+                 abs_path:str=None,
                  ) -> None:
         super().__init__()
 
@@ -53,15 +53,15 @@ class SampleMeta(object):
 class DataSample(object):
 
     def __init__(self, 
-                 data,
-                 gt,
-                 meta:SampleMeta,
+                 data=None,
+                 gts=None,
+                 meta:SampleMeta=None,
                 ) -> None:
         super().__init__()
 
         self._data = data
-        self._gt = gt
-        self._ori_gt = gt
+        self._gts = gts
+        self._ori_gts = gts
         self._meta = meta
 
     @property
@@ -69,12 +69,12 @@ class DataSample(object):
         return self._data
 
     @property
-    def gt(self):
-        return self._gt
+    def gts(self):
+        return self._gts
 
     @property
-    def ori_gt(self):
-        return self._ori_gt
+    def ori_gts(self):
+        return self._ori_gts
 
     @property
     def meta(self):
@@ -86,8 +86,8 @@ class DataSample(object):
 class DatasetMeta(object):
 
     def __init__(self,
-                 abs_path,
-                 data_infos:List[DataSample],
+                 abs_path=None,
+                 data_infos:List[DataSample]=[],
                  ) -> None:
         super().__init__()
 
