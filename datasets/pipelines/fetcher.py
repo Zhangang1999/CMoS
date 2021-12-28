@@ -1,10 +1,8 @@
 
-from logging import NOTSET
-
 from datasets.pipelines import PIPELINES
 
 @PIPELINES.register()
-class FetchRawData(object):
+class Fetcher(object):
 
     def __init__(self) -> None:
         super().__init__()

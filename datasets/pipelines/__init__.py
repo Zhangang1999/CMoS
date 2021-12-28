@@ -7,4 +7,6 @@
 from managers.ops_manager import OpsManager
 PIPELINES = OpsManager('pipeline')
 
-from .compose import BaseCompose, SequenceCompose, ChoiceCompose
+from .composer import BaseComposer, SequenceComposer, ChoiceComposer
+from .fetcher import Fetcher
+from .loader import Loader

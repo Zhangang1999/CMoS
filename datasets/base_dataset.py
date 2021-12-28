@@ -1,5 +1,5 @@
-import numpy as np
-from abc import abcmeta
+from typing import List
+from abc import abcmeta, abstractmethod
 
 from torch.utils.data import Dataset
 from datasets.pipelines import PIPELINES
@@ -8,26 +8,29 @@ from datasets.meta_desc import DatasetMeta
 
 class BaseDataset(Dataset, metaclass=abcmeta):
 
-    def __init__(self, cfg, pipeline=None) -> None:
+    def __init__(self, cfg, transform:List=[]) -> None:
         super().__init__()
-        if pipeline is not None:
-            self.transform = instantiate_from_args(cfg.composer, PIPELINES)(pipeline)
-        self.dataset_meta = self._init_dataset()
+        
+        for worker, args in cfg.pipelines:
+            setattr(self, worker, instantiate_from_args(args, PIPELINES))
+        self.transform = self.composer([self.fetcher, transform, self.loader])
 
-    def _init_dataset(self) -> DatasetMeta:
+        self.dataset_meta = self._init_dataset(cfg)
+
+    @abstractmethod
+    def _init_dataset(self, cfg) -> DatasetMeta:
         raise NotImplementedError
 
     def __len__(self):
         return len(self.dataset_meta.data_infos)
 
-    def get_gts(self):
-        gts = np.array([data.gts for data in self.dataset_meta.data_infos])
-        return gts
+    def get_data_meta(self):
+        data_meta = [data for data in self.dataset_meta.data_infos]
+        return data_meta
 
     def get_item(self, i):
         item = self.dataset_meta.data_infos[i]
-        if hasattr(self, 'transform'):
-            item = self.transform(item)
+        item = self.transform(item)
         return item
 
     def __getitem__(self, i):

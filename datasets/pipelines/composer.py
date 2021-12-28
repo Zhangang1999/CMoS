@@ -6,7 +6,7 @@ from utils.instantiate import instantiate_from_args
 
 from datasets.pipelines import PIPELINES
 
-class BaseCompose(object):
+class BaseComposer(object):
     """Base class for compose pipeline."""
     def __init__(self, transforms:List=[]):
         assert isinstance(transforms, Sequence)
@@ -32,7 +32,7 @@ class BaseCompose(object):
         return repr_str
 
 @PIPELINES.register()
-class SequenceCompose(BaseCompose):
+class SequenceComposer(BaseComposer):
     """Composes several augmentations together as a sequence.
     Args:
         transforms (List[Transform]): list of transforms to compose.
@@ -51,7 +51,7 @@ class SequenceCompose(BaseCompose):
         return data_sample
 
 @PIPELINES.register()
-class ChoiceCompose(BaseCompose):
+class ChoiceComposer(BaseComposer):
 
     def __init__(self, transforms:List=[], num_choice:int=1):
         super().__init__(transforms=transforms)

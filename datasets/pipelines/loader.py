@@ -2,7 +2,7 @@ import os
 from datasets.pipelines import PIPELINES
 
 @PIPELINES.register()
-class LoadData(object):
+class Loader(object):
 
     def __init__(self, data_fmt, **kwargs):
         self.data_fmt = data_fmt
