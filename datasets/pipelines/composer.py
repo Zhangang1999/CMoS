@@ -59,9 +59,10 @@ class ChoiceComposer(BaseComposer):
         self.num_choice = num_choice
 
     def _check_num_choice_if_valid(self, num_choice):
-        assert num_choice > 0, "num_choice should > 0"
         assert isinstance(num_choice, int), "num_choice should be int."
+        assert num_choice > 0 and num_choice < len(self.transforms)
 
     def __call__(self, data_sample):
-        t = random.choice(self.transforms, self.num_choice)
-        return t(data_sample)
+        for t in random.choice(self.transforms, self.num_choice):
+            data_sample = t(data_sample)
+        return data_sample
