@@ -6,6 +6,7 @@ import numpy as np
 from metrics import METRICS
 from utils.instantiate import instantiate_from_args
 from utils.time_utils import LogTimer
+from utils.metric_utils import calc_metric
 
 from hooks import HOOKS, BaseHook
 
@@ -99,16 +100,4 @@ class MetricHook(BaseHook):
 
     def _collect_metrics(self, metric_classes:List[str]) -> Dict:
         """Collecting the metrics to dict."""
-
-        metrics = {}
-        for metric, metric_obj in self.metric_dict.items():
-            metrics.update({metric: OrderedDict()})
-            metrics[metric]['all'] = 0
-            resDict = metric_obj.gather(metric)
-
-            for _cls in range(1, len(metric_classes)):
-                mean = np.mean(np.array(resDict[_cls]))
-                metrics[metric][metric_classes[_cls]] = mean
-            metrics[metric]['all'] = \
-                sum(metrics[metric].values()) / (len(metrics[metric].values())-1)
-        return metrics
+        return calc_metric(self.metric_dict, metric_classes)

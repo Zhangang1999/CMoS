@@ -3,12 +3,12 @@ import argparse
 import logging
 import sys
 
-from models import MODELS
+from models import MOS
 from datasets import DATASETS
-from datasets.loaders import LOADERS
+from datasets import LOADERS
 from trainers import TRAINERS
-from trainers.hooks.base_hook import HOOKS
-from trainers.optimizers import OPTIMIZERS
+from trainers import HOOKS
+from trainers import OPTIMIZERS
 
 from managers import FileManager
 
@@ -36,7 +36,7 @@ def main(cfg, device, work_dir):
             for dataset, shuffle in [(dataset.train, True), (dataset.valid, False)]
     ]
     
-    model = instantiate_from_args(cfg.model, MODELS, dict(device=device))
+    model = instantiate_from_args(cfg.model, MOS, dict(device=device))
     optimizer = instantiate_from_args(cfg.optimizer, OPTIMIZERS, dict(model=model))
 
     trainer = instantiate_from_args(cfg.trainer, TRAINERS, 

@@ -11,6 +11,7 @@ from metrics import METRICS
 
 from managers import FileManager
 
+from utils.metric_utils import calc_metric, format_metric_msg
 from utils.instantiate import instantiate_from_args
 
 def load_and_print_configs():
@@ -25,9 +26,13 @@ def load_and_print_configs():
 
     return cfg
 
-def calc_print_and_save_results(metrics):
-    #TODO: calulate results from metrics.
-    pass
+def calc_print_and_save_results(metric_dict, metric_classes, metric_labels, file):
+    metrics = calc_metric(metric_dict, metric_classes)
+    metric_msg = format_metric_msg(metrics, metric_labels, metric_classes)
+    file.log_log(
+        session='test',
+        data={'metric_msg': metric_msg}
+    )
 
 def main(device, work_dir, display=False):
     cfg = load_and_print_configs()
@@ -46,7 +51,11 @@ def main(device, work_dir, display=False):
     
     results = {}
     for idx, datum in enumerate(data_loader):
-        outputs = model.test_step(*datum, metrics)
+        outputs = model.test_step(*datum)
+
+        for _, metric_obj in metrics:
+            metric_obj.__call__(outputs['results'], outputs['gts'])
+
         if display:
             #TODO: display the results.
             pass

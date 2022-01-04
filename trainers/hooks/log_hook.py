@@ -4,6 +4,7 @@ from typing import List
 
 from utils.moving_average import MovingAverage
 from utils.time_utils import get_eta_str
+from utils.metric_utils import format_metric_msg
 
 from hooks import HOOKS, BaseHook
 
@@ -94,24 +95,4 @@ class LogHook(BaseHook):
 
     def _format_metric_msg(self, trainer, metric_labels, metric_classes):
         """format the metric messages."""
-    
-        make_row = lambda vals: (' %5s |' * len(vals)) % tuple(vals)
-        make_sep = lambda n: ('-------+' * n)
-
-        metrics = trainer.outputs['metrics']
-
-        title_msg = '\n'
-        title_msg += make_row([''] + [(' '+ x + ' ') for x in metric_classes]) + '\n'
-        title_msg += make_sep(len(metric_classes)+1)
-
-        metric_msg = '\n'
-        for metric in metric_labels:
-            metric_msg += make_row([metric] + ['%.2f' % x if x<100 else '%.1f' \
-                            % x for x in metrics[metric].values()])
-            metric_msg += '\n'
-
-        ending_msg = make_sep(len(metric_labels)+1) + '\n'
-        ending_msg += '\n'
-
-        return title_msg + metric_msg + ending_msg
-    
+        return format_metric_msg(trainer.outputs['metrics'], metric_labels, metric_classes)
