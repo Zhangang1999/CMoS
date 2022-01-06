@@ -4,8 +4,6 @@
 # @Desc   : 
 # @Date   : 2021-11-29
 
-from managers.ops_manager import OpsManager
-DATASETS = OpsManager('dataset')
 
 from .meta_desc import SampleMeta, DatasetMeta, DataSample
 

@@ -1,7 +1,7 @@
 
-from datasets.loaders import LOADERS
 from torch.utils.data import DataLoader
 
+from .loader_builder import LOADERS
 
 @LOADERS.register()
 class SimpleDataLoader(DataLoader):

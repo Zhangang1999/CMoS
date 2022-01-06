@@ -1,5 +1,5 @@
 
-from datasets.transforms import TRANSFORMS, BaseTransform
+from .base_transform import TRANSFORMS, BaseTransform
 
 from random import random
 from torchvision.transform.functional import to_pil_image

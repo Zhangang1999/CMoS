@@ -1,7 +1,7 @@
 
 from torchvision.transforms.functional import to_pil_image
 
-from datasets.transforms import TRANSFORMS, BaseTransform
+from .base_transform import TRANSFORMS, BaseTransform
 
 
 @TRANSFORMS.register()

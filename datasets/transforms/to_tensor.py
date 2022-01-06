@@ -1,7 +1,7 @@
 
 
 from torchvision.transforms.functional import to_tensor
-from datasets.transforms import TRANSFORMS, BaseTransform
+from .base_transform import TRANSFORMS, BaseTransform
 
 @TRANSFORMS.register()
 class ToTensor(BaseTransform):

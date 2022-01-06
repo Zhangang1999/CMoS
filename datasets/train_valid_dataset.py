@@ -4,8 +4,9 @@ import os
 import numpy as np
 from collections import defaultdict
 
-from datasets import DATASETS, BaseDataset
 from datasets import SampleMeta, DatasetMeta, DataSample
+from .base_dataset import BaseDataset
+from .dataset_builder import DATASETS
 
 
 @DATASETS.register()

@@ -5,7 +5,7 @@ class BaseHook(object):
         'before_run', 'after_run',
         'before_train_epoch', 'after_train_epoch',
         'before_valid_epoch', 'after_valid_epoch',
-        'before_train_iter', 'after_valid_iter',
+        'before_train_iter', 'after_train_iter',
         'before_valid_iter', 'after_valid_iter',
     ]
 
@@ -17,8 +17,8 @@ class BaseHook(object):
     def priority(self):
         return self._priority
     @priority.setter
-    def set_priority(self, priority):
-        self._priority  = priority
+    def priority(self, priority):
+        self._priority = priority
     
     def before_run(self, trainer):
         raise NotImplementedError

@@ -8,8 +8,13 @@ def get_time_str():
 
 def get_eta_str(max_iter, iteration, time_avg):
     eta_str = str(datetime.timedelta(
-        seconds=(max_iter-iteration) * time_avg)).split('.')[0]
+        seconds=(max_iter-iteration) * time_avg.get_avg())).split('.')[0]
     return eta_str
+
+def get_tot_str(start, end):
+    tot_str = str(datetime.timedelta(
+        seconds=(end - start))).split('.')[0]
+    return tot_str
 
 class LogTimer:
 

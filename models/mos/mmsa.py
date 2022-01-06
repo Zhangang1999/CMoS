@@ -1,25 +1,22 @@
 
-from models import heads
-from models import losses
-from models.heads.mmsa import pred
-from mos import MOS
-from models.backbones import BACKBONES
-from models.heads import HEADS
-from models.losses import LOSSES
-from models.postprocess import POSTPROCESSES
-
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from trainers import optimizers
 from utils.instantiate import instantiate_from_args
 
+from ..backbones import BACKBONES
+from ..heads import HEADS
+from ..losses import LOSSES
+from ..postprocess import POSTPROCESSES
+from .mos_builder import MOS
+
+
 @MOS.register()
-class MMSA(nn.Module):
+class MMSA(object):
 
     def __init__(self, cfg, device, **kwargs) -> None:
         super().__init__()
-
+        
         self.backbone = instantiate_from_args(cfg.backbone, BACKBONES).to(device)
         self.heads = instantiate_from_args(cfg.head, HEADS).to(device)
         self.loss = instantiate_from_args(cfg.loss, LOSSES).to(device)
@@ -44,7 +41,7 @@ class MMSA(nn.Module):
         return dict(predicts=predicts, results=results, gts=gts)            
 
     def test_step(self, data, gts, optimizer=None):
-        return self.valid_step(data, gts, optimizers)
+        return self.valid_step(data, gts, optimizer)
 
     def infer_step(self, data):
         data = data.to(self.device)

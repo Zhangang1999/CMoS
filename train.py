@@ -3,12 +3,12 @@ import argparse
 import logging
 import sys
 
-from models import MOS
-from datasets import DATASETS
-from datasets import LOADERS
-from trainers import TRAINERS
-from trainers import HOOKS
-from trainers import OPTIMIZERS
+from models.mos.mos_builder import MOS
+from datasets.dataset_builder import DATASETS
+from datasets.loaders.loader_builder import LOADERS
+from trainers.trainer_builder import TRAINERS
+from trainers.hooks.hook_builder import HOOKS
+from trainers.optimizers.optimizer_builder import OPTIMIZERS
 
 from managers import FileManager
 

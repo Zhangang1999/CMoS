@@ -4,7 +4,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from losses import LOSSES
+from .loss_builder import LOSSES
 
 
 @LOSSES.register()

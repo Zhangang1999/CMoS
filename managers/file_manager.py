@@ -41,7 +41,7 @@ class FileManager(object):
     def root(self) -> str:
         return self._root
     @root.setter
-    def set_root(self, root) -> None:
+    def root(self, root) -> None:
         self._root = root
 
     @property

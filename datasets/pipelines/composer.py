@@ -1,10 +1,12 @@
 import random
-from typing import List
 from collections.abc import Sequence
-from datasets.transforms import TRANSFORMS
+from typing import List
+
+from datasets.transforms.base_transform import TRANSFORMS
 from utils.instantiate import instantiate_from_args
 
-from datasets.pipelines import PIPELINES
+from .pipeline_builder import PIPELINES
+
 
 class BaseComposer(object):
     """Base class for compose pipeline."""

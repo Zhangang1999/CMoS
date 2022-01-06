@@ -1,7 +1,7 @@
 
 from torchvision.transforms import Normalize as tv_Normalize
 
-from datasets.transforms import TRANSFORMS, BaseTransform
+from .base_transform import TRANSFORMS, BaseTransform
 
 @TRANSFORMS.register(BaseTransform)
 class Normalization():

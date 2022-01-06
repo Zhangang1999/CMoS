@@ -26,8 +26,8 @@ def format_metric_msg(metrics, metric_labels, metric_classes):
     make_sep = lambda n: ('-------+' * n)
 
     title_msg = '\n'
-    title_msg += make_row([''] + [(' '+ x + ' ') for x in metric_classes]) + '\n'
-    title_msg += make_sep(len(metric_classes)+1)
+    title_msg += make_row([''] + ['all'] + [x for x in metric_classes]) + '\n'
+    title_msg += make_sep(len(metric_classes)+2)
 
     metric_msg = '\n'
     for metric in metric_labels:
@@ -35,7 +35,7 @@ def format_metric_msg(metrics, metric_labels, metric_classes):
                         % x for x in metrics[metric].values()])
         metric_msg += '\n'
 
-    ending_msg = make_sep(len(metric_labels)+1) + '\n'
+    ending_msg = make_sep(len(metric_classes)+2) + '\n'
     ending_msg += '\n'
 
     return title_msg + metric_msg + ending_msg

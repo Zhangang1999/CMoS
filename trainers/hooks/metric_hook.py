@@ -3,13 +3,13 @@ from collections import OrderedDict
 from typing import Dict, List
 
 import numpy as np
-from metrics import METRICS
 from utils.instantiate import instantiate_from_args
 from utils.time_utils import LogTimer
 from utils.metric_utils import calc_metric
 
-from hooks import HOOKS, BaseHook
-
+from metrics.metric_builder import METRICS
+from .hook_builder import HOOKS
+from .base_hook import BaseHook
 
 @HOOKS.register()
 class MetricHook(BaseHook):

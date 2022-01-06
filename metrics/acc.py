@@ -1,5 +1,6 @@
 
-from metrics import METRICS, BaseMetric
+from .base_metric import BaseMetric
+from .metric_builder import METRICS
 import numpy as np
 
 @METRICS.register()

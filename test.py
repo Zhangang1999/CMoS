@@ -4,10 +4,10 @@ import argparse
 import logging
 import sys
 
-from models import MODELS
-from datasets import DATASETS
-from datasets.loaders import LOADERS
-from metrics import METRICS
+from models.mos.mos_builder import MOS
+from datasets.dataset_builder import DATASETS
+from datasets.loaders.loader_builder import LOADERS
+from metrics.metric_builder import METRICS
 
 from managers import FileManager
 
@@ -44,7 +44,7 @@ def main(device, work_dir, display=False):
     test_dataset = instantiate_from_args(cfg.data.test, DATASETS, dict(pipeline=cfg.test_pipeline))
     data_loader = instantiate_from_args(cfg.data.loader, LOADERS, dict(dataset=test_dataset, shuffle=False))
             
-    model = instantiate_from_args(cfg.model, MODELS, dict(device=device))
+    model = instantiate_from_args(cfg.model, MOS, dict(device=device))
     metrics = [instantiate_from_args(metric, METRICS) for metric in cfg.metrics]
 
     model.eval()

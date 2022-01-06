@@ -1,7 +1,7 @@
 import torch
 from torch.optim import _functional as F
 from torch.optim.optimizer import Optimizer
-from trainers.optimizers import OPTIMIZERS
+from .optimizer_builder import OPTIMIZERS
 
 
 @OPTIMIZERS.register()

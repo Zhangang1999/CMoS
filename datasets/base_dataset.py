@@ -1,10 +1,11 @@
-from typing import List
 from abc import abcmeta, abstractmethod
+from typing import List
 
 from torch.utils.data import Dataset
-from datasets.pipelines import PIPELINES
 from utils.instantiate import instantiate_from_args
+
 from datasets.meta_desc import DatasetMeta
+from pipelines.base_pipeline import PIPELINES
 
 class BaseDataset(Dataset, metaclass=abcmeta):
 

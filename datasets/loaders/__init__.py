@@ -4,8 +4,6 @@
 # @Desc   : 
 # @Date   : 2021-12-29
 
-from managers.ops_manager import OpsManager
-LOADERS = OpsManager('loader')
 
 from .dataloader import SimpleDataLoader
 

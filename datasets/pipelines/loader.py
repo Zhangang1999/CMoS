@@ -1,6 +1,6 @@
 import os
 from utils.image_io_utils import cv2_imread, imageio_imread
-from datasets.pipelines import PIPELINES
+from .pipeline_builder import PIPELINES
 
 class BaseLoader(object):
     HANDLER = {

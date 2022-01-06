@@ -1,13 +1,15 @@
 
 import re
 import os
+import torch
 import logging
 import time
 from typing import Dict, List, Tuple
 from collections import OrderedDict
 
 from utils.time_utils import get_time_str
-from trainers import TRAINERS, BaseTrainer
+from .base_trainer import BaseTrainer
+from .trainer_builder import TRAINERS
 
 @TRAINERS.register()
 class EpochTrainer(BaseTrainer):
@@ -16,8 +18,8 @@ class EpochTrainer(BaseTrainer):
                  model, 
                  optimizer=None, 
                  file_manager=None, 
-                 train_params:Dict = {}
-                 ) -> None:
+                 train_params:Dict = {},
+                 **kwagrs) -> None:
         """Trainer for epoch training fashion.
 
         Args:
@@ -27,7 +29,9 @@ class EpochTrainer(BaseTrainer):
             train_params (Dict): with some indicated keys. Defaults to {}.
         """
         super().__init__(model, 
-                         optimizer=optimizer, file_manager=file_manager, train_params=train_params)
+                         optimizer=optimizer,
+                         file_manager=file_manager,
+                         train_params=train_params)
         assert self._max_epochs is not None
 
     def run_iter(self, datum:List, train_mode:bool, **kwargs):

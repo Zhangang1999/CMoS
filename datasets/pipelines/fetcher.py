@@ -1,6 +1,5 @@
 
-from logging import NOTSET
-from datasets.pipelines import PIPELINES
+from .pipeline_builder import PIPELINES
 
 
 class BaseFetcher(object):

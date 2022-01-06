@@ -1,12 +1,13 @@
 
-from time import time
+import time
 from typing import List
 
 from utils.moving_average import MovingAverage
-from utils.time_utils import get_eta_str
+from utils.time_utils import get_eta_str, get_tot_str
 from utils.metric_utils import format_metric_msg
 
-from hooks import HOOKS, BaseHook
+from .base_hook import BaseHook
+from .hook_builder import HOOKS
 
 
 @HOOKS.register()
@@ -32,9 +33,9 @@ class LogHook(BaseHook):
 
     def after_run(self, trainer):
         """record the time and print the time message."""
-
-        time_msg = "Total training time: {}".format(
-            (self.end_time-self.start_time).strftime("%H:%M:%S"))
+        
+        self.end_time = time.time()
+        time_msg = "Total training time: {}".format(get_tot_str(self.start_time, self.end_time))
         print(time_msg, flush=True)
 
         trainer.file_manager.log_log(
@@ -49,8 +50,9 @@ class LogHook(BaseHook):
             self.cur_elapsed = time.time() - self.cur_time
             self.time_avgs.add(self.cur_elapsed)
         self.cur_time = time.time()
+        self.cur_elapsed = 0.
 
-        loss_labels = trainer.model.loss.loss_labels
+        loss_labels = trainer.loss_labels
         losses = trainer.outputs['losses']
         for k in loss_labels:
             self.loss_avgs[k].add(losses[k].item())
@@ -86,7 +88,7 @@ class LogHook(BaseHook):
 
         losses = sum([[k, self.loss_avgs[k].get_avg()] for k in loss_labels], [])
         total_losses = sum([self.loss_avgs[k].get_avg() for k in loss_labels])
-        loss_msg = " %s: %.3f |" * len(loss_labels) + " T: %.3f ||" % tuple(losses + total_losses)
+        loss_msg = (" %s: %.3f |" * len(loss_labels) + " T: %.3f ||") % tuple(losses + [total_losses])
 
         time_msg = " ETA: %s || timer: %.3f'" \
             % (get_eta_str(trainer.max_iters, trainer.iter, self.time_avgs), self.cur_elapsed)

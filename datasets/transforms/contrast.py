@@ -1,5 +1,5 @@
 
-from datasets.transforms import BaseTransform, TRANSFORMS
+from .base_transform import BaseTransform, TRANSFORMS
 
 from torchvision.transforms.transforms import ColorJitter as tv_ColorJitter
 

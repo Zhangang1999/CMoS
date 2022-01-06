@@ -4,5 +4,3 @@
 # @Desc   : 
 # @Date   : 2021-12-31
 
-from managers.ops_manager import OpsManager
-MOS = OpsManager('motion scorer')

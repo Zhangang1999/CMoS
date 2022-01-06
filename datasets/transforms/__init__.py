@@ -4,8 +4,6 @@
 # @Desc   : 
 # @Date   : 2021-11-29
 
-from managers.ops_manager import OpsManager
-TRANSFORMS = OpsManager('transform')
 
 from .base_transform import BaseTransform
 from .contrast import Contrast
