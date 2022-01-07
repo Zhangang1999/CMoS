@@ -3,6 +3,9 @@ import numpy as np
 from collections import OrderedDict
 from typing import Dict, List
 
+from metrics import metric_builder
+
+
 def calc_metric(metric_dict, metric_classes:List[str]) -> Dict:
     """Collecting the metrics to dict."""
 
@@ -10,10 +13,11 @@ def calc_metric(metric_dict, metric_classes:List[str]) -> Dict:
     for metric, metric_obj in metric_dict.items():
         metrics.update({metric: OrderedDict()})
         metrics[metric]['all'] = 0
-        resDict = metric_obj.gather(metric)
+        resDict = metric_obj.gather([f'{metric}_{_cls}' for _cls in range(len(metric_classes))])
 
-        for _cls in range(1, len(metric_classes)):
-            mean = np.mean(np.array(resDict[_cls]))
+        for _cls in range(len(metric_classes)):
+            results = resDict[f'{metric}_{_cls}']
+            mean = np.mean(np.array(results).reshape(-1))
             metrics[metric][metric_classes[_cls]] = mean
         metrics[metric]['all'] = \
             sum(metrics[metric].values()) / (len(metrics[metric].values())-1)

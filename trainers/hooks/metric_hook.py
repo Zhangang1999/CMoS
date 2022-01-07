@@ -3,13 +3,14 @@ from collections import OrderedDict
 from typing import Dict, List
 
 import numpy as np
-from utils.instantiate import instantiate_from_args
-from utils.time_utils import LogTimer
-from utils.metric_utils import calc_metric
-
 from metrics.metric_builder import METRICS
-from .hook_builder import HOOKS
+from utils.instantiate import instantiate_from_args
+from utils.metric_utils import calc_metric
+from utils.time_utils import LogTimer
+
 from .base_hook import BaseHook
+from .hook_builder import HOOKS
+
 
 @HOOKS.register()
 class MetricHook(BaseHook):
@@ -81,7 +82,7 @@ class MetricHook(BaseHook):
 
     def _update_best_metric(self, metrics, trainer):
         
-        curr_metric = metrics['all'][trainer.metric_labels[0]]
+        curr_metric = metrics[trainer.metric_labels[0]]['all']
         if (self.best_metric > curr_metric and self.is_ascending) \
             or (self.best_metric < curr_metric and not self.is_ascending):
             return

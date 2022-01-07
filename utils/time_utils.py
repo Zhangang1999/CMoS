@@ -23,9 +23,9 @@ class LogTimer:
 
     def __enter__(self):
         self.start_time = time.time()
-        logging.log(self.msg + ' ...')
+        logging.info(self.msg + ' ...')
 
     def __exit__(self, e, ev, t):
         self.end_time = time.time() 
-        logging.log(self.msg + 'done. using {:.4}s'.format(
+        logging.info(self.msg + 'done. using {:.4}s'.format(
             self.start_time-self.end_time))  

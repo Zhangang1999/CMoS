@@ -154,7 +154,7 @@ class EpochTrainer(BaseTrainer):
         """
         assert status in self.file_manager.CKPT_STATUS
 
-        filename_tmpl = self.model.name + '_ep{}_{}.pt'
+        filename_tmpl = self.model_name + '_ep{}_{}.pt'
         if meta is None:
             meta = {}
         elif not isinstance(meta, dict):
@@ -163,7 +163,7 @@ class EpochTrainer(BaseTrainer):
         meta.update(time=get_time_str())
 
         filename = filename_tmpl.format(self._epoch+1, status)
-        filepath = os.path.join(self.file_manager.ckpt(self.model.name), filename)
+        filepath = os.path.join(self.file_manager.ckpt(self.model_name), filename)
 
         checkpoint = dict(
             state_dict=self.model.state_dict(),

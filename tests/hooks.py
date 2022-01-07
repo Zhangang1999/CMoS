@@ -1,14 +1,18 @@
-import unittest
-
 import os
-import time
 import sys
+import time
+import unittest
+import logging
+import numpy as np
+
 cur_path = os.path.dirname(os.path.abspath(__file__).replace('\\', '/'))
 sys.path.insert(0, f'{cur_path}/../')
 
-from trainers.trainer_builder import TRAINERS
 from trainers.hooks.hook_builder import HOOKS
+from trainers.trainer_builder import TRAINERS
+from utils.config import Config
 from managers import FileManager
+
 
 class FakeLoss(object):
     def __init__(self, value) -> None:
@@ -20,6 +24,7 @@ class FakeLoss(object):
 class HookTest(unittest.TestCase):
 
     def setUp(self) -> None:
+        
         self.trainer = TRAINERS.get('EpochTrainer')(
             model=None,
             optimizer=None,
@@ -34,24 +39,41 @@ class HookTest(unittest.TestCase):
             ),
             priority=100,
         )
+
+        self.trainer.register_hook(
+            hook=HOOKS.get('MetricHook')(
+                metric_cfg=Config(dict(
+                    is_ascending=True,
+                    metric_labels=['acc'],
+                    metric_classes=['A', 'B'],
+                    to_eval_metrics={
+                        'acc': dict(
+                            object='ACC',
+                            metric='acc', 
+                            num_classes=2)
+                    }
+                ))
+            ),
+            priority=10,
+        )
         self.trainer.loss_labels = ['C', 'Z', 'J']
-        self.trainer.metric_labels = ['acc']
-        self.trainer.metric_classes = ['A', 'B']
+        # self.trainer.metric_labels = ['acc']
+        # self.trainer.metric_classes = ['A', 'B']
 
     def test_hook_info(self):
         print(self.trainer.get_hook_info())
 
     def test_call_hook_before_run(self):
         self.trainer.call_hook("before_run")
-        hook = self.trainer.hooks[0]
-        self.assertEquals(len(hook.loss_avgs), 3)
+        log_hook = self.trainer.hooks[1]
+        self.assertEqual(len(log_hook.loss_avgs), 3)
 
     def test_call_hook_after_run(self):
         self.trainer.call_hook("before_run")
         time.sleep(2)
         self.trainer.call_hook("after_run")
     
-    def test_call_hook_after_iter(self):
+    def test_call_hook_after_train_iter(self):
         self.trainer.call_hook("before_run")
         setattr(self.trainer, 'outputs', {})
         self.trainer.outputs['losses'] = {
@@ -64,13 +86,17 @@ class HookTest(unittest.TestCase):
     def test_call_hook_after_valid_epoch(self):
         self.trainer.call_hook("before_run")
         setattr(self.trainer, 'outputs', {})
-        self.trainer.outputs['metrics'] = {
-            'acc': {
-                'all': 2.22,
-                'A': 1.11,
-                'B': 3.33,
-            }
-        }
+        # self.trainer.outputs['metrics'] = {
+        #     'acc': {
+        #         'all': 2.22,
+        #         'A': 1.11,
+        #         'B': 3.33,
+        #     }
+        # }
+        self.trainer.call_hook("before_valid_epoch")
+        self.trainer.outputs['predicts'] = np.array([0, 1, 0])
+        self.trainer.outputs['gts'] = np.array([1, 0, 1])
+        self.trainer.call_hook("after_valid_iter")
         self.trainer.call_hook("after_valid_epoch")
 
 

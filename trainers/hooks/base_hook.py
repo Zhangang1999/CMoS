@@ -21,22 +21,22 @@ class BaseHook(object):
         self._priority = priority
     
     def before_run(self, trainer):
-        raise NotImplementedError
+        pass
 
     def after_run(self, trainer):
-        raise NotImplementedError
+        pass
 
     def before_epoch(self, trainer):
-        raise NotImplementedError
+        pass
 
     def after_epoch(self, trainer):
-        raise NotImplementedError
+        pass
 
     def before_iter(self, trainer):
-        raise NotImplementedError
+        pass
 
     def after_iter(self, trainer):
-        raise NotImplementedError
+        pass
 
     def before_train_epoch(self, trainer):
         self.before_epoch(trainer)
