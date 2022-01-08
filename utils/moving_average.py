@@ -5,7 +5,7 @@ from collections import deque
 class MovingAverage():
     """ Keeps an average window of the specified number of items. """
 
-    def __init__(self, max_window_size=1000):
+    def __init__(self, max_window_size:int=1000):
         self.max_window_size = max_window_size
         self.reset()
 
@@ -41,3 +41,5 @@ class MovingAverage():
     
     def __len__(self):
         return len(self.window)
+if __name__ == "__main__":
+    movingaverage = MovingAverage()
