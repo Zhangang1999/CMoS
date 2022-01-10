@@ -7,7 +7,8 @@ import sys
 cur_path = os.path.dirname(os.path.abspath(__file__).replace('\\', '/'))
 sys.path.insert(0, f'{cur_path}/../')
 
-from metrics import METRICS, ACC
+from metrics.metric_builder import METRICS
+from metrics.acc import ACC
 
 class MetricTest(unittest.TestCase):
 

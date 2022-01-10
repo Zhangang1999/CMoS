@@ -6,6 +6,9 @@ from managers.file_manager import FileManager
 from torch.optim import Optimizer
 from utils.distribute_utils import get_dist_info
 
+from .hooks.base_hook import BaseHook
+
+
 class BaseTrainer(metaclass=ABCMeta):
 
     def __init__(self,
@@ -23,7 +26,7 @@ class BaseTrainer(metaclass=ABCMeta):
         self.optimizer = optimizer
         
         self.file_manager = file_manager
-        self.file_manager.model_name = model.name
+        self.file_manager.model_name = self.model_name
         self.file_manager.log_init()
 
         self._rank, self._world_size = get_dist_info()
@@ -33,8 +36,6 @@ class BaseTrainer(metaclass=ABCMeta):
         self._epoch = 0
         self._iter = 0
         self._inner_iter = 0
-        self._max_epochs = None
-        self._max_iters = None
 
     def _check_train_params_if_valid(self, train_params):
         if not isinstance(train_params, dict):
@@ -42,7 +43,7 @@ class BaseTrainer(metaclass=ABCMeta):
                             f"but got {type(train_params)}")
         if 'max_iters' not in train_params and 'max_epochs' not in train_params:
             raise ValueError("Only one of `max_iters` or `max_epochs` can be set")
-        
+
         if 'max_iters' in train_params:
             self._max_iters = train_params['max_iters']
         if 'max_epochs' in train_params:
@@ -97,11 +98,11 @@ class BaseTrainer(metaclass=ABCMeta):
     
     @property
     def max_epochs(self):
-        return self._max_epochs()
+        return self._max_epochs
     
     @property
     def max_iters(self):
-        return self._max_iters()
+        return self._max_iters
 
     @abstractmethod
     def train(self, data_loader, **kwargs):
@@ -136,7 +137,6 @@ class BaseTrainer(metaclass=ABCMeta):
     
     def register_hook(self, hook, priority):
         assert isinstance(hook, BaseHook), 'hook sholud be an instance of HOOK.'
-
         hook.priority = priority
 
         inserted = False
@@ -156,7 +156,7 @@ class BaseTrainer(metaclass=ABCMeta):
         for hook in self.hooks:   
             priority = hook.priority
             class_name = hook.__class__.__name__
-            hook_info = f"({priority:<12}) {class_name:<35}"
+            hook_info = f"({priority:<5}) {class_name:<35}"
             for trigger_stage in hook.get_triggered_stages():
                 stage_hook_map[trigger_stage].append(hook_info)
         

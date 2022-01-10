@@ -5,8 +5,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from heads import HEADS
-
+from .head_builder import HEADS
 
 @HEADS.register()
 class MMSAHead(nn.Module):

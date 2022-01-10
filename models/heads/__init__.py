@@ -4,9 +4,6 @@
 # @Desc   : 
 # @Date   : 2021-12-20
 
-from managers.ops_manager import OpsManager
-HEADS = OpsManager('head')
-
 from .mmsa import MMSAHead
 
 __all__ = [

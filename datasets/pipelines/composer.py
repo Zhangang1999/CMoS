@@ -1,10 +1,25 @@
 import random
+from collections.abc import Sequence
 from typing import List
 
-class BaseCompose(object):
+from datasets.transforms.base_transform import TRANSFORMS
+from utils.instantiate import instantiate_from_args
+
+from .pipeline_builder import PIPELINES
+
+
+class BaseComposer(object):
     """Base class for compose pipeline."""
     def __init__(self, transforms:List=[]):
-        self.transforms = transforms
+        assert isinstance(transforms, Sequence)
+        self.transforms = []
+        for transform in transforms:
+            if isinstance(transforms, dict):
+                self.transforms.append(instantiate_from_args(transform, TRANSFORMS))
+            elif callable(transform):
+                self.transforms.append(transform)
+            else:
+                raise TypeError("Transform should be a dict or callable.")
 
     def __call__(self, data_sample):
         raise NotImplementedError
@@ -18,8 +33,8 @@ class BaseCompose(object):
             repr_str += "   {}\n".format(t.__repr__())
         return repr_str
 
-
-class SequenceCompose(BaseCompose):
+@PIPELINES.register()
+class SequenceComposer(BaseComposer):
     """Composes several augmentations together as a sequence.
     Args:
         transforms (List[Transform]): list of transforms to compose.
@@ -37,8 +52,8 @@ class SequenceCompose(BaseCompose):
             data_sample = t(data_sample)    
         return data_sample
 
-
-class ChoiceCompose(BaseCompose):
+@PIPELINES.register()
+class ChoiceComposer(BaseComposer):
 
     def __init__(self, transforms:List=[], num_choice:int=1):
         super().__init__(transforms=transforms)
@@ -46,9 +61,10 @@ class ChoiceCompose(BaseCompose):
         self.num_choice = num_choice
 
     def _check_num_choice_if_valid(self, num_choice):
-        assert num_choice > 0, "num_choice should > 0"
         assert isinstance(num_choice, int), "num_choice should be int."
+        assert num_choice > 0 and num_choice < len(self.transforms)
 
     def __call__(self, data_sample):
-        t = random.choice(self.transforms, self.num_choice)
-        return t(data_sample)
+        for t in random.choice(self.transforms, self.num_choice):
+            data_sample = t(data_sample)
+        return data_sample

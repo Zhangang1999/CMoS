@@ -4,5 +4,8 @@
 # @Desc   : 
 # @Date   : 2021-11-29
 
-from managers.ops_manager import OpsManager
-MODELS = OpsManager('model')
+from .backbones import *
+from .heads import *
+from .losses import *
+from .postprocess import *
+from .mos import *

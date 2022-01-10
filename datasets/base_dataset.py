@@ -1,21 +1,38 @@
-
-from abc import ABCMeta
+from abc import abcmeta, abstractmethod
+from typing import List
 
 from torch.utils.data import Dataset
+from utils.instantiate import instantiate_from_args
 
 from datasets.meta_desc import DatasetMeta
+from pipelines.base_pipeline import PIPELINES
 
+class BaseDataset(Dataset, metaclass=abcmeta):
 
-class BaseDataset(Dataset, metaclass=ABCMeta):
-
-    def __init__(self, cfg) -> None:
+    def __init__(self, cfg, transform:List=[]) -> None:
         super().__init__()
-        self.cfg = cfg
-        self.dataset_meta = self._init_dataset()
+        
+        for worker, args in cfg.pipelines:
+            setattr(self, worker, instantiate_from_args(args, PIPELINES))
+        self.transform = self.composer([self.fetcher, transform, self.loader])
 
-    def _init_dataset(self) -> DatasetMeta:
+        self.dataset_meta = self._init_dataset(cfg)
+
+    @abstractmethod
+    def _init_dataset(self, cfg) -> DatasetMeta:
         raise NotImplementedError
 
     def __len__(self):
         return len(self.dataset_meta.data_infos)
-    
+
+    def get_data_meta(self):
+        data_meta = [data for data in self.dataset_meta.data_infos]
+        return data_meta
+
+    def get_item(self, i):
+        item = self.dataset_meta.data_infos[i]
+        item = self.transform(item)
+        return item
+
+    def __getitem__(self, i):
+        return self.get_item(i)

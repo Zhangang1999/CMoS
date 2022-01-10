@@ -3,11 +3,13 @@ from collections import OrderedDict
 from typing import Dict, List
 
 import numpy as np
-from metrics import METRICS
+from metrics.metric_builder import METRICS
 from utils.instantiate import instantiate_from_args
+from utils.metric_utils import calc_metric
 from utils.time_utils import LogTimer
 
-from hooks import HOOKS, BaseHook
+from .base_hook import BaseHook
+from .hook_builder import HOOKS
 
 
 @HOOKS.register()
@@ -80,7 +82,7 @@ class MetricHook(BaseHook):
 
     def _update_best_metric(self, metrics, trainer):
         
-        curr_metric = metrics['all'][trainer.metric_labels[0]]
+        curr_metric = metrics[trainer.metric_labels[0]]['all']
         if (self.best_metric > curr_metric and self.is_ascending) \
             or (self.best_metric < curr_metric and not self.is_ascending):
             return
@@ -99,16 +101,4 @@ class MetricHook(BaseHook):
 
     def _collect_metrics(self, metric_classes:List[str]) -> Dict:
         """Collecting the metrics to dict."""
-
-        metrics = {}
-        for metric, metric_obj in self.metric_dict.items():
-            metrics.update({metric: OrderedDict()})
-            metrics[metric]['all'] = 0
-            resDict = metric_obj.gather(metric)
-
-            for _cls in range(1, len(metric_classes)):
-                mean = np.mean(np.array(resDict[_cls]))
-                metrics[metric][metric_classes[_cls]] = mean
-            metrics[metric]['all'] = \
-                sum(metrics[metric].values()) / (len(metrics[metric].values())-1)
-        return metrics
+        return calc_metric(self.metric_dict, metric_classes)

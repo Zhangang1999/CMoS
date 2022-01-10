@@ -1,5 +1,8 @@
 
 from typing import Dict, List
+import typing
+
+from numpy.lib.arraysetops import isin
 
 class BaseMetric(object):
     
@@ -24,9 +27,10 @@ class BaseMetric(object):
         Returns:
             Dict: Gathered Dict with target keys.
         """
+        assert isinstance(target_keys, (list, tuple))
         def _collect(d, t):
             if not isinstance(d, dict): return []
-            if t in d and isinstance(d[t], list):
+            if t in d and isinstance(d[t], (list, float)):
                 return d[t]
 
             s = []

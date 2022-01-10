@@ -1,6 +1,7 @@
 
 import math
-from hooks import BaseHook, HOOKS
+from .base_hook import BaseHook
+from .hook_builder import HOOKS
 
 @HOOKS.register()
 class LrHook(BaseHook):

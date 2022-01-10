@@ -4,6 +4,9 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
+from .loss_builder import LOSSES
+
+@LOSSES.register()
 class MMSALoss(nn.Module):
 
     def __init__(self, cfg) -> None:

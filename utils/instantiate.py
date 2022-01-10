@@ -3,7 +3,7 @@ from typing import Dict
 import inspect
 from managers import OpsManager
 
-def instantiate_from_args(args:Dict, opsPool: OpsManager, default_args:Dict=None):
+def instantiate_from_args(args:Dict, opsPool: OpsManager, default_args:Dict={}):
     if not isinstance(args, Dict):
         raise ValueError(f"cfg should be dict, but got {type(args)}")
 
@@ -13,7 +13,7 @@ def instantiate_from_args(args:Dict, opsPool: OpsManager, default_args:Dict=None
     if not isinstance(default_args, Dict):
         raise ValueError(f"default_args should be dict, but got {type(default_args)}")
 
-    if object not in args:
+    if 'object' not in args:
         raise KeyError("cfg should contain a builtin key: `object`")
 
     logging.info(f"Instantiating {opsPool.name.capitalize()}")

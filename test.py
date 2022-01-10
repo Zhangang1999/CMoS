@@ -4,15 +4,14 @@ import argparse
 import logging
 import sys
 
-from models import MODELS
-from datasets import DATASETS
-# from datasets.loaders import LOADERS
-from trainers import TRAINERS
-# from trainers.optimizers import OPTIMIZERS
-from metrics import METRICS
+from models.mos.mos_builder import MOS
+from datasets.dataset_builder import DATASETS
+from datasets.loaders.loader_builder import LOADERS
+from metrics.metric_builder import METRICS
 
 from managers import FileManager
 
+from utils.metric_utils import calc_metric, format_metric_msg
 from utils.instantiate import instantiate_from_args
 
 def load_and_print_configs():
@@ -27,28 +26,36 @@ def load_and_print_configs():
 
     return cfg
 
-def calc_print_and_save_results(metrics):
-    #TODO: calulate results from metrics.
-    pass
+def calc_print_and_save_results(metric_dict, metric_classes, metric_labels, file):
+    metrics = calc_metric(metric_dict, metric_classes)
+    metric_msg = format_metric_msg(metrics, metric_labels, metric_classes)
+    file.log_log(
+        session='test',
+        data={'metric_msg': metric_msg}
+    )
 
 def main(device, work_dir, display=False):
     cfg = load_and_print_configs()
     
-    file_manager = FileManager(PathManager(work_dir))
+    file_manager = FileManager(work_dir)
     for field in file_manager.IN_MANAGEMENT:
         os.makedirs(getattr(file_manager.path, field), exist_ok=True)
 
     test_dataset = instantiate_from_args(cfg.data.test, DATASETS, dict(pipeline=cfg.test_pipeline))
     data_loader = instantiate_from_args(cfg.data.loader, LOADERS, dict(dataset=test_dataset, shuffle=False))
             
-    model = instantiate_from_args(cfg.model, MODELS, dict(device=device))
+    model = instantiate_from_args(cfg.model, MOS, dict(device=device))
     metrics = [instantiate_from_args(metric, METRICS) for metric in cfg.metrics]
 
     model.eval()
     
     results = {}
     for idx, datum in enumerate(data_loader):
-        outputs = model.test_step(*datum, metrics)
+        outputs = model.test_step(*datum)
+
+        for _, metric_obj in metrics:
+            metric_obj.__call__(outputs['results'], outputs['gts'])
+
         if display:
             #TODO: display the results.
             pass

@@ -1,5 +1,6 @@
 
-from hooks import HOOKS, BaseHook
+from .base_hook import BaseHook
+from .hook_builder import HOOKS
 
 
 @HOOKS.register()

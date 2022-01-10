@@ -4,9 +4,6 @@
 # @Desc   : 
 # @Date   : 2021-11-29
 
-from managers.ops_manager import OpsManager
-BACKBONES = OpsManager('backbone')
-
 from .flownet import FlowNetS, FlowNetC
 
 __all__ = [

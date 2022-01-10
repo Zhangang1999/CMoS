@@ -1,5 +1,6 @@
 
-from metrics import METRICS, BaseMetric
+from .base_metric import BaseMetric
+from .metric_builder import METRICS
 import numpy as np
 
 @METRICS.register()
@@ -20,6 +21,7 @@ class ACC(BaseMetric):
             t = (y == _cls).astype(bool).reshape(-1)
             conf_matrix = self._calc_tp_fp_tn_fn(p, t)
             self.ResDict[name][_cls] = conf_matrix
+            self.ResDict[name][f'acc_{_cls}'] = conf_matrix[0] / (conf_matrix[0] + conf_matrix[1])
         # self.ResDict[name]['acc'] = [acc]
 
     @staticmethod

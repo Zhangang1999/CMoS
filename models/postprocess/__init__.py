@@ -4,5 +4,3 @@
 # @Desc   : 
 # @Date   : 2021-11-29
 
-from managers.ops_manager import OpsManager
-TRANSFORMS = OpsManager('transform')

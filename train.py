@@ -3,12 +3,12 @@ import argparse
 import logging
 import sys
 
-from models import MODELS
-from datasets import DATASETS
-from datasets.loaders import LOADERS
-from trainers import TRAINERS
-from trainers.hooks.base_hook import HOOKS
-from trainers.optimizers import OPTIMIZERS
+from models.mos.mos_builder import MOS
+from datasets.dataset_builder import DATASETS
+from datasets.loaders.loader_builder import LOADERS
+from trainers.trainer_builder import TRAINERS
+from trainers.hooks.hook_builder import HOOKS
+from trainers.optimizers.optimizer_builder import OPTIMIZERS
 
 from managers import FileManager
 
@@ -29,15 +29,14 @@ def main(cfg, device, work_dir):
     file_manager = FileManager(work_dir)
     file_manager.makedirs(cfg.model.name)
 
-    train_dataset = instantiate_from_args(cfg.data.train, DATASETS, dict(pipeline=cfg.train_pipeline))
-    valid_dataset = instantiate_from_args(cfg.data.valid, DATASETS, dict(pipeline=cfg.valid_pipeline))
+    dataset = instantiate_from_args(cfg.data.train, DATASETS, dict(transform=cfg.transform))
 
     data_loaders = [
         instantiate_from_args(cfg.data.loader, LOADERS, dict(dataset=dataset, shuffle=shuffle))
-            for dataset, shuffle in [(train_dataset, True), (valid_dataset, False)]
+            for dataset, shuffle in [(dataset.train, True), (dataset.valid, False)]
     ]
     
-    model = instantiate_from_args(cfg.model, MODELS, dict(device=device))
+    model = instantiate_from_args(cfg.model, MOS, dict(device=device))
     optimizer = instantiate_from_args(cfg.optimizer, OPTIMIZERS, dict(model=model))
 
     trainer = instantiate_from_args(cfg.trainer, TRAINERS, 

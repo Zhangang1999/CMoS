@@ -6,8 +6,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from spatial_correlation_sampler import spatial_correlation_sample
 
-from backbones import BACKBONES
-
+from .backbone_builder import BACKBONES
 
 @BACKBONES.register()
 class FlowNetS(nn.Module):

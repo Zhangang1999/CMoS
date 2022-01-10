@@ -21,8 +21,13 @@ def get_eta_str(max_iter:int , iteration:int, time_avg:float)->str:
 
     '''
     eta_str = str(datetime.timedelta(
-        seconds=(max_iter-iteration) * time_avg)).split('.')[0]
+        seconds=(max_iter-iteration) * time_avg.get_avg())).split('.')[0]
     return eta_str
+
+def get_tot_str(start, end):
+    tot_str = str(datetime.timedelta(
+        seconds=(end - start))).split('.')[0]
+    return tot_str
 
 class LogTimer:
 
@@ -31,9 +36,9 @@ class LogTimer:
 
     def __enter__(self):
         self.start_time = time.time()
-        logging.log(self.msg + ' ...')
+        logging.info(self.msg + ' ...')
 
     def __exit__(self, e, ev, t):
         self.end_time = time.time() 
-        logging.log(self.msg + 'done. using {:.4}s'.format(
-            self.start_time-self.end_time))
+        logging.info(self.msg + 'done. using {:.4}s'.format(
+            self.start_time-self.end_time))  

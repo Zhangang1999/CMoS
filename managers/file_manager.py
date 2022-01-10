@@ -41,7 +41,7 @@ class FileManager(object):
     def root(self) -> str:
         return self._root
     @root.setter
-    def set_root(self, root) -> None:
+    def root(self, root) -> None:
         self._root = root
 
     @property
@@ -93,6 +93,15 @@ class FileManager(object):
             metric = os.path.basename(file).split('_')[0]
             metrics[metric] = file
         return metrics
+
+    def visuals(self, model_name:str=None) -> Dict:
+        model_name = self._check_model_name(model_name)
+
+        visuals = {}
+        for file in os.listdir(self.metric(model_name)):
+            visual_type = os.path.basename(file).split('_')[0]
+            visuals[visual_type] = file
+        return visuals
 
     # ACTIONS
     def log_init(self, model_name:str=None, data:Dict={}) -> None:

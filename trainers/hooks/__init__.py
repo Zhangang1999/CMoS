@@ -4,9 +4,6 @@
 # @Desc   : 
 # @Date   : 2021-12-02
 
-from managers.ops_manager import OpsManager
-HOOKS = OpsManager('hook')
-
 from .base_hook import BaseHook
 from .log_hook import LogHook
 from .lr_hook import LrHook

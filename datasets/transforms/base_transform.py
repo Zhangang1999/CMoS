@@ -1,3 +1,5 @@
+from managers.ops_manager import OpsManager
+TRANSFORMS = OpsManager('transform')
 
 class BaseTransform(object):
 
